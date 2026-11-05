@@ -7,22 +7,25 @@
   <meta name="description" content="כלי קוד פתוח לישראלים. מכין בקשת מחיקה חוקית לכל חברה שמחזיקה את הפרטים שלכם, לפי חוק הגנת הפרטיות ו-GDPR." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Crect x='6' y='12' width='20' height='8' rx='1.5' stroke='%23fafaf7' stroke-width='1.4' fill='none'/%3E%3Cline x1='4' y1='22' x2='28' y2='10' stroke='%23fafaf7' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
   <style>
     :root {
-      --ground: #f6f4ee;
-      --ground-soft: #ededea;
+      --ground: #f5f3ee;
+      --ground-2: #eceae3;
       --surface: #ffffff;
       --ink: #0a0a0a;
-      --ink-soft: #2a2a2a;
+      --ink-2: #2a2a2a;
       --mute: #6b6b6b;
-      --mute-soft: #9a9a9a;
-      --rule: #e8e5df;
-      --rule-soft: #f0ede6;
-      --accent-green: #3ca55c;
-      --accent-red: #c4242a;
-      --accent-blue: #1d5fbf;
+      --mute-2: #a09c92;
+      --rule: #e4e1d8;
+      --rule-2: #d8d4c8;
+      --accent: #d9542a;
+      --accent-soft: #f5b89a;
+      --accent-tint: #faefe6;
+      --green: #3ca55c;
+      --red: #c4242a;
+      --blue: #1d5fbf;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -34,668 +37,397 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-      font-feature-settings: "ss01", "cv11";
     }
-    .serif { font-family: 'Instrument Serif', 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; }
-    .mono { font-family: ui-monospace, 'SF Mono', monospace; }
+    .italic-serif { font-family: 'Instrument Serif', 'Fraunces', serif; font-style: italic; font-weight: 400; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-    /* ============== TOP BAR ============== */
+    /* TOP BAR */
     .topbar {
-      position: fixed;
-      top: 20px; left: 0; right: 0;
-      z-index: 50;
-      display: flex;
-      justify-content: center;
-      padding: 0 24px;
-      pointer-events: none;
+      position: fixed; top: 20px; left: 0; right: 0; z-index: 50;
+      display: flex; justify-content: center; padding: 0 24px; pointer-events: none;
     }
     .topbar-inner {
       pointer-events: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      width: 100%;
-      max-width: 1200px;
-      padding: 10px 14px 10px 20px;
-      background: rgba(255,255,255,0.7);
-      backdrop-filter: blur(16px) saturate(120%);
-      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 24px; width: 100%; max-width: 1200px;
+      padding: 8px 8px 8px 20px;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
       border: 1px solid rgba(255,255,255,0.8);
       border-radius: 999px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
     }
-    .topbar .brand {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none; color: var(--ink);
-    }
+    .topbar .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
     .topbar .mark {
-      width: 32px; height: 32px;
-      display: grid; place-items: center;
-      background: var(--ink);
-      color: #fafaf7;
-      border-radius: 8px;
+      width: 32px; height: 32px; display: grid; place-items: center;
+      background: var(--ink); color: #fafaf7; border-radius: 8px;
     }
     .topbar .mark svg { width: 18px; height: 18px; }
     .topbar .brand-name { font-weight: 600; font-size: 15px; }
-    .topbar nav { display: flex; align-items: center; gap: 4px; font-size: 14px; }
-    .topbar nav a {
-      color: var(--ink-soft);
-      text-decoration: none;
-      padding: 8px 14px;
-      border-radius: 999px;
-      transition: background 0.15s, color 0.15s;
-    }
+    .topbar nav { display: flex; align-items: center; gap: 2px; font-size: 14px; }
+    .topbar nav a { color: var(--ink-2); text-decoration: none; padding: 8px 14px; border-radius: 999px; transition: background 0.15s; }
     .topbar nav a:hover { background: rgba(10,10,10,0.05); }
-    .topbar nav a.cta {
-      background: var(--ink);
-      color: #fafaf7;
-      font-weight: 500;
-      margin-right: 4px;
+    .topbar nav .pill-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ink); color: var(--ground);
+      padding: 6px 6px 6px 16px; border-radius: 999px;
+      font-weight: 500; margin-right: 4px;
     }
-    .topbar nav a.cta:hover { background: #2a2a2a; }
-
-    /* ============== HERO ============== */
-    .hero {
-      position: relative;
-      padding: 160px 24px 80px;
-      text-align: center;
-      overflow: hidden;
+    .topbar nav .pill-cta .arrow {
+      width: 26px; height: 26px; background: var(--ground); color: var(--ink);
+      border-radius: 50%; display: grid; place-items: center;
     }
+    .topbar nav .pill-cta .arrow svg { width: 12px; height: 12px; }
 
-    /* Atmospheric background (faded clouds/paper texture) */
+    /* HERO */
+    .hero { position: relative; padding: 160px 24px 100px; text-align: center; overflow: hidden; }
     .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
+      content: ''; position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(180,180,180,0.25), transparent 70%),
-        radial-gradient(ellipse 50% 35% at 80% 25%, rgba(160,160,170,0.2), transparent 70%),
-        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(140,140,150,0.15), transparent 60%);
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(180,180,180,0.22), transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 25%, rgba(160,160,170,0.18), transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(140,140,150,0.12), transparent 60%);
       pointer-events: none;
-      z-index: 0;
     }
-    .hero > * { position: relative; z-index: 1; }
-
-    .hero .icon-chip {
-      width: 44px; height: 44px;
-      background: var(--ink);
-      color: var(--ground);
-      border-radius: 50%;
-      display: inline-grid;
-      place-items: center;
-      margin-bottom: 20px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    .hero > * { position: relative; }
+    .beta-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--mute);
+      margin-bottom: 22px; font-weight: 500;
     }
-    .hero .icon-chip svg { width: 22px; height: 22px; }
-
-    .hero .beta-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--mute);
-      margin-bottom: 18px;
-      font-weight: 500;
-    }
-    .hero .beta-tag::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: var(--accent-green);
-      border-radius: 50%;
-      box-shadow: 0 0 0 3px rgba(60,165,92,0.2);
+    .beta-tag::before {
+      content: ''; width: 8px; height: 8px;
+      background: var(--green); border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(60,165,92,0.18);
       animation: pulse 2s ease-in-out infinite;
     }
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(60,165,92,0.2); }
-      50%      { box-shadow: 0 0 0 6px rgba(60,165,92,0.1); }
+      0%, 100% { box-shadow: 0 0 0 3px rgba(60,165,92,0.18); }
+      50% { box-shadow: 0 0 0 7px rgba(60,165,92,0.08); }
     }
-
     .hero h1 {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(42px, 5.6vw, 72px);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      line-height: 1.05;
-      max-width: 14ch;
-      margin: 0 auto 24px;
-      color: var(--ink);
+      font-family: 'Fraunces', serif;
+      font-size: clamp(42px, 6.4vw, 88px);
+      font-weight: 400; letter-spacing: -0.03em; line-height: 1.02;
+      max-width: 14ch; margin: 0 auto 28px; color: var(--ink);
     }
-    .hero h1 em {
-      font-family: 'Instrument Serif', 'Fraunces', serif;
-      font-style: italic;
-      font-weight: 400;
-      letter-spacing: -0.02em;
-    }
+    .hero h1 em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
     .hero .sub {
-      font-size: 17px;
-      color: var(--mute);
-      max-width: 44ch;
-      margin: 0 auto 36px;
-      line-height: 1.55;
+      font-family: 'Inter', sans-serif; font-size: 18px; color: var(--mute);
+      max-width: 48ch; margin: 0 auto 36px; line-height: 1.55;
     }
-
-    /* Pill input with inline button */
     .pill-input {
-      display: flex;
-      align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--rule);
-      border-radius: 999px;
-      padding: 6px 6px 6px 20px;
-      max-width: 460px;
-      margin: 0 auto 20px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.04);
-      transition: box-shadow 0.2s, border-color 0.2s;
+      display: flex; align-items: center;
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 999px; padding: 6px 6px 6px 20px;
+      max-width: 480px; margin: 0 auto 22px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 14px 36px rgba(0,0,0,0.05);
+      transition: border-color 0.2s;
     }
-    .pill-input:focus-within {
-      border-color: var(--ink);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 14px 36px rgba(0,0,0,0.08);
-    }
+    .pill-input:focus-within { border-color: var(--ink); }
     .pill-input input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-family: inherit;
-      font-size: 15px;
-      color: var(--ink);
-      padding: 10px 6px;
-      direction: rtl;
+      flex: 1; border: none; outline: none; background: transparent;
+      font-family: inherit; font-size: 15px; color: var(--ink);
+      padding: 10px 6px; direction: rtl;
     }
-    .pill-input input::placeholder { color: var(--mute-soft); }
+    .pill-input input::placeholder { color: var(--mute-2); }
     .pill-input button {
-      background: var(--ink);
-      color: var(--ground);
-      border: none;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 12px 22px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.08s;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ink); color: var(--ground);
+      border: none; font-family: inherit; font-size: 14px; font-weight: 500;
+      padding: 6px 6px 6px 18px; border-radius: 999px;
+      cursor: pointer; transition: background 0.15s;
     }
     .pill-input button:hover { background: #2a2a2a; }
-    .pill-input button:active { transform: translateY(1px); }
-
-    .hero .social-proof {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      color: var(--mute);
+    .pill-input button .arrow {
+      width: 28px; height: 28px; background: var(--ground); color: var(--ink);
+      border-radius: 50%; display: grid; place-items: center;
     }
-    .avatars {
-      display: flex;
-      flex-direction: row-reverse;
-    }
-    .avatars .avatar {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      border: 2px solid var(--ground);
-      margin-left: -8px;
-      background-size: cover;
-      background-position: center;
-    }
+    .pill-input button .arrow svg { width: 12px; height: 12px; }
+    .social-proof { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--mute); }
+    .avatars { display: flex; flex-direction: row-reverse; }
+    .avatars .avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ground); margin-left: -8px; }
     .avatars .avatar.a1 { background: linear-gradient(135deg, #e89a7a, #d87659); }
     .avatars .avatar.a2 { background: linear-gradient(135deg, #8a9bb8, #5d718f); }
     .avatars .avatar.a3 { background: linear-gradient(135deg, #b89a7a, #8f7055); }
 
-    /* ============== FEATURE CARDS ============== */
-    .features {
-      padding: 20px 24px 100px;
+    /* SECTIONS */
+    .section { max-width: 1200px; margin: 0 auto; padding: 100px 24px; position: relative; }
+    .section-head { text-align: center; margin-bottom: 56px; }
+    .section-head h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(32px, 4.2vw, 52px);
+      font-weight: 400; letter-spacing: -0.02em; line-height: 1.05;
+      margin-bottom: 14px; color: var(--ink);
     }
-    .features-grid {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+    .section-head h2 em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+    .section-head p { color: var(--mute); font-size: 16px; max-width: 48ch; margin: 0 auto; }
+
+    /* CUT-CORNER CARDS */
+    .cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .cut-card {
+      background: var(--surface); border: 1px solid var(--rule);
+      padding: 20px 20px 24px; position: relative;
+      min-height: 340px; display: flex; flex-direction: column;
+      clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+      transition: transform 0.2s ease;
     }
-    .feat-card {
-      background: var(--surface);
-      border-radius: 20px;
-      padding: 28px 24px;
-      text-align: center;
-      border: 1px solid var(--rule);
-      position: relative;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .cut-card:hover { transform: translateY(-2px); }
+    .cut-card .cut-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }
+    .cut-card .cut-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--ink); line-height: 1.4;
     }
-    .feat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    .cut-card .cut-dots {
+      display: grid; grid-template-columns: repeat(4, 3px);
+      grid-template-rows: repeat(4, 3px); gap: 2px; opacity: 0.45;
     }
-    .feat-card .f-icon {
-      width: 40px; height: 40px;
-      background: var(--ink);
-      color: var(--ground);
-      border-radius: 50%;
-      margin: 0 auto 16px;
-      display: grid; place-items: center;
+    .cut-card .cut-dots span { width: 3px; height: 3px; background: var(--ink); border-radius: 50%; }
+    .cut-card .cut-body { font-size: 14px; color: var(--mute); line-height: 1.55; margin-bottom: auto; }
+    .cut-card .cut-diagram { margin-top: 24px; display: grid; place-items: center; min-height: 150px; }
+    .cut-card .cut-diagram svg { width: 100%; max-width: 200px; height: auto; }
+
+    /* PILLARS (one orange highlighted) */
+    .pillars {
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 20px; overflow: hidden;
+      display: grid; grid-template-columns: repeat(4, 1fr);
     }
-    .feat-card .f-icon svg { width: 20px; height: 20px; }
-    .feat-card h3 {
-      font-size: 17px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--ink);
+    .pillar {
+      padding: 32px 24px; border-left: 1px solid var(--rule);
+      position: relative; min-height: 320px;
+      display: flex; flex-direction: column;
     }
-    .feat-card p {
-      font-size: 14px;
-      color: var(--mute);
-      line-height: 1.45;
+    .pillar:last-child { border-left: none; }
+    .pillar h4 {
+      font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+      margin-bottom: 8px; letter-spacing: -0.01em;
+    }
+    .pillar p { font-size: 14px; color: var(--mute); line-height: 1.55; margin-bottom: 20px; }
+    .pillar .pillar-diagram { margin-top: auto; display: grid; place-items: center; min-height: 140px; }
+    .pillar.featured { background: var(--accent); color: var(--surface); border: none; }
+    .pillar.featured h4 { color: var(--surface); }
+    .pillar.featured p { color: rgba(255,255,255,0.78); }
+
+    /* STAT CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 16px; padding: 24px 24px 0;
+      position: relative; min-height: 240px;
+      display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
+    }
+    .stat-card .stat-body { font-size: 15px; line-height: 1.5; color: var(--ink); margin-bottom: 12px; }
+    .stat-card .stat-big {
+      font-family: 'Fraunces', serif;
+      font-size: 92px; font-weight: 500; line-height: 1;
+      color: var(--ground-2); letter-spacing: -0.03em;
+      text-align: center; padding: 0 0 12px; user-select: none;
+    }
+    .stat-card.featured { background: var(--accent-tint); border-color: var(--accent-soft); }
+    .stat-card.featured .stat-big {
+      background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent) 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-card.featured::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(217,84,42,0.18) 1px, transparent 0);
+      background-size: 12px 12px; pointer-events: none; opacity: 0.5;
     }
 
-    /* ============== MISSION CARD ============== */
-    .mission {
-      padding: 40px 24px 120px;
-      position: relative;
+    /* COVERAGE */
+    .coverage { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .coverage .text h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(32px, 4.2vw, 56px);
+      font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 16px;
     }
+    .coverage .text h2 em { font-family: 'Instrument Serif', serif; font-style: italic; }
+    .coverage .text p { font-size: 16px; color: var(--mute); max-width: 44ch; margin-bottom: 20px; }
+    .coverage .text .legend { display: flex; gap: 20px; font-size: 13px; color: var(--mute); }
+    .coverage .text .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .coverage .text .legend span::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); }
+    .coverage .text .legend span.intl::before { background: var(--blue); }
+    .coverage .text .legend span.leak::before { background: var(--red); }
+    .bubbles { position: relative; height: 460px; }
+    .bubble {
+      position: absolute; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--surface); border: 1px solid var(--rule);
+      font-family: 'Inter', sans-serif; font-weight: 500;
+      color: var(--ink); text-align: center; padding: 8px;
+      font-size: 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 20px rgba(0,0,0,0.04);
+      transition: transform 0.4s cubic-bezier(.2,.7,.2,1);
+    }
+    .bubble:hover { transform: scale(1.06); z-index: 2; }
+    .bubble.b-intl { color: var(--blue); }
+    .bubble.b-leak { color: var(--red); }
+
+    /* MISSION */
+    .mission { padding: 20px 24px 100px; }
     .mission-card {
-      max-width: 680px;
-      margin: 0 auto;
-      background: var(--surface);
-      border: 1px solid var(--rule);
-      border-radius: 24px;
-      padding: 48px 48px 40px;
+      max-width: 720px; margin: 0 auto;
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 24px; padding: 48px 48px 40px;
       position: relative;
     }
     .mission-card .top-icon {
-      position: absolute;
-      top: -24px;
-      right: 48px;
+      position: absolute; top: -24px; right: 48px;
       width: 48px; height: 48px;
-      background: var(--ink);
-      color: var(--ground);
-      border-radius: 50%;
-      display: grid; place-items: center;
+      background: var(--ink); color: var(--ground);
+      border-radius: 50%; display: grid; place-items: center;
       box-shadow: 0 6px 16px rgba(0,0,0,0.12);
     }
     .mission-card .top-icon svg { width: 22px; height: 22px; }
     .mission-card .badge {
-      display: inline-block;
-      font-size: 13px;
-      color: var(--ink-soft);
-      background: var(--ground-soft);
-      padding: 5px 14px;
-      border-radius: 999px;
-      margin-bottom: 20px;
-      font-weight: 500;
+      display: inline-block; font-size: 13px; color: var(--ink-2);
+      background: var(--ground-2); padding: 5px 14px; border-radius: 999px;
+      margin-bottom: 20px; font-weight: 500;
     }
     .mission-card h2 {
-      font-family: 'Inter', sans-serif;
-      font-size: 28px;
-      font-weight: 600;
-      line-height: 1.2;
-      letter-spacing: -0.015em;
-      margin-bottom: 20px;
-      color: var(--ink);
+      font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+      line-height: 1.15; letter-spacing: -0.015em; margin-bottom: 20px;
     }
-    .mission-card h2 em {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-weight: 400;
-    }
-    .mission-card p {
-      font-size: 15px;
-      color: var(--mute);
-      line-height: 1.6;
-      margin-bottom: 14px;
-    }
-    .mission-card .stats {
-      margin-top: 26px;
-      margin-bottom: 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .mission-card .stats .stat {
-      font-size: 15px;
-      color: var(--ink);
-    }
-    .mission-card .stats .stat strong {
-      font-weight: 600;
-      margin-left: 8px;
-    }
-    .mission-card .stats .stat span { color: var(--mute); }
-    .mission-card .signature {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-top: 20px;
-      border-top: 1px solid var(--rule);
-    }
-    .mission-card .signature .avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #d87659, #a0543b);
-    }
-    .mission-card .signature .s-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .mission-card h2 em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+    .mission-card p { font-size: 15px; color: var(--mute); line-height: 1.6; margin-bottom: 14px; }
+    .mission-card .stats-mini { margin-top: 26px; margin-bottom: 26px; display: flex; flex-direction: column; gap: 10px; }
+    .mission-card .stats-mini .stat { font-size: 15px; display: flex; gap: 8px; }
+    .mission-card .stats-mini .stat strong { font-weight: 600; }
+    .mission-card .stats-mini .stat span { color: var(--mute); min-width: 110px; }
+    .mission-card .signature { display: flex; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid var(--rule); }
+    .mission-card .signature .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #d87659, #a0543b); }
+    .mission-card .signature .s-name { font-size: 14px; font-weight: 600; }
     .mission-card .signature .s-title { font-size: 13px; color: var(--mute); }
 
-    /* ============== HOW IT WORKS ============== */
-    .how {
-      padding: 80px 24px 120px;
-      text-align: center;
-      position: relative;
-    }
-    .how .eyebrow {
-      display: inline-block;
-      font-size: 13px;
-      color: var(--ink-soft);
-      background: var(--surface);
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--rule);
-      margin-bottom: 18px;
-    }
-    .how h2 {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(32px, 4vw, 44px);
-      font-weight: 600;
-      letter-spacing: -0.025em;
-      line-height: 1.1;
-      max-width: 18ch;
-      margin: 0 auto 50px;
-    }
-    .how h2 em {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-weight: 400;
-    }
-    .steps {
-      max-width: 900px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-    .step-card {
-      background: var(--surface);
-      border: 1px solid var(--rule);
-      border-radius: 16px;
-      padding: 24px 20px;
-      text-align: center;
-      position: relative;
-      transition: transform 0.2s ease;
-    }
-    .step-card:hover { transform: translateY(-2px); }
-    .step-card .step-num {
-      display: inline-block;
-      font-size: 11px;
-      color: var(--mute-soft);
-      background: var(--ground-soft);
-      padding: 3px 9px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-      font-family: ui-monospace, monospace;
-    }
-    .step-card h4 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 4px;
-    }
-    .step-card p {
-      font-size: 13px;
-      color: var(--mute);
-      line-height: 1.5;
-    }
-
-    /* ============== BIG CTA ============== */
-    .big-cta {
-      padding: 100px 24px 140px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .big-cta::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 50% 40% at 50% 40%, rgba(180,180,180,0.2), transparent 70%);
-      pointer-events: none;
-    }
-    .big-cta > * { position: relative; }
-    .big-cta h2 {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(36px, 5vw, 56px);
-      font-weight: 600;
-      letter-spacing: -0.025em;
-      line-height: 1.05;
-      max-width: 16ch;
-      margin: 0 auto 20px;
-    }
-    .big-cta h2 em {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-weight: 400;
-    }
-    .big-cta .sub {
-      font-size: 17px;
-      color: var(--mute);
-      max-width: 44ch;
-      margin: 0 auto 32px;
-    }
-    .big-cta .cta-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      font-size: 15px;
-      font-weight: 500;
-      font-family: inherit;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      text-decoration: none;
-      line-height: 1;
-      transition: all 0.15s;
-    }
-    .btn-dark { background: var(--ink); color: var(--ground); }
-    .btn-dark:hover { background: #2a2a2a; }
-    .btn-ghost { color: var(--ink); border-color: var(--rule); background: var(--surface); }
-    .btn-ghost:hover { border-color: var(--ink); }
-
-    /* ============== FAQ ============== */
-    .faq {
-      padding: 20px 24px 120px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-    .faq .eyebrow {
-      display: inline-block;
-      font-size: 13px;
-      color: var(--ink-soft);
-      background: var(--surface);
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--rule);
-      margin-bottom: 16px;
-    }
-    .faq h2 {
-      font-family: 'Inter', sans-serif;
-      font-size: 36px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      margin-bottom: 36px;
-    }
-    .faq h2 em {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-weight: 400;
-    }
-    .faq-item {
-      border-top: 1px solid var(--rule);
-      padding: 18px 0;
-    }
+    /* FAQ */
+    .faq-wrap { max-width: 760px; margin: 0 auto; }
+    .faq-item { border-top: 1px solid var(--rule); padding: 20px 0; }
     .faq-item:last-child { border-bottom: 1px solid var(--rule); }
     .faq-item summary {
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--ink);
-      list-style: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      cursor: pointer; font-size: 17px; font-weight: 500; list-style: none;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
     }
     .faq-item summary::-webkit-details-marker { display: none; }
     .faq-item summary::after {
-      content: '+';
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--mute);
-      transition: transform 0.2s;
-      line-height: 1;
-    }
-    .faq-item[open] summary::after { transform: rotate(45deg); }
-    .faq-item .a {
-      font-size: 15px;
-      color: var(--mute);
-      line-height: 1.6;
-      margin-top: 12px;
-      max-width: 60ch;
-    }
-
-    /* ============== FOOTER ============== */
-    footer {
-      background: var(--ink);
-      color: var(--ground);
-      padding: 80px 24px 32px;
-    }
-    .footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .footer-top {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 48px;
-      padding-bottom: 60px;
-      border-bottom: 1px solid #2a2a2a;
-    }
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .footer-brand .mark {
-      width: 36px; height: 36px;
-      background: var(--ground);
-      color: var(--ink);
-      border-radius: 8px;
+      content: '+'; width: 32px; height: 32px;
+      border-radius: 50%; background: var(--ground-2);
       display: grid; place-items: center;
+      font-size: 20px; color: var(--ink);
+      transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+      flex-shrink: 0; line-height: 1;
+    }
+    .faq-item[open] summary::after {
+      content: '×'; background: var(--ink); color: var(--ground); font-size: 24px;
+    }
+    .faq-item .a { font-size: 15px; color: var(--mute); line-height: 1.6; margin-top: 14px; max-width: 62ch; }
+
+    /* BIG CTA */
+    .big-cta { padding: 120px 24px 140px; text-align: center; position: relative; overflow: hidden; }
+    .big-cta::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(217,84,42,0.08), transparent 70%);
+    }
+    .big-cta > * { position: relative; }
+    .big-cta h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(36px, 5.6vw, 72px);
+      font-weight: 400; letter-spacing: -0.025em; line-height: 1.02;
+      max-width: 16ch; margin: 0 auto 20px;
+    }
+    .big-cta h2 em { font-family: 'Instrument Serif', serif; font-style: italic; }
+    .big-cta p { font-size: 17px; color: var(--mute); max-width: 44ch; margin: 0 auto 36px; }
+    .pill-cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--ink); color: var(--ground);
+      padding: 8px 8px 8px 24px; border-radius: 999px;
+      text-decoration: none; font-weight: 500; font-size: 16px;
+      transition: background 0.15s;
+    }
+    .pill-cta-btn:hover { background: #2a2a2a; }
+    .pill-cta-btn .arrow {
+      width: 36px; height: 36px; background: var(--ground); color: var(--ink);
+      border-radius: 50%; display: grid; place-items: center;
+    }
+    .pill-cta-btn .arrow svg { width: 14px; height: 14px; }
+    .ghost-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--ink-2); text-decoration: none; font-size: 15px;
+      padding: 12px 20px; border: 1px solid var(--rule-2);
+      border-radius: 999px; background: var(--surface);
+      margin-right: 12px; transition: border-color 0.15s;
+    }
+    .ghost-link:hover { border-color: var(--ink); }
+
+    /* FOOTER */
+    footer { background: var(--ink); color: var(--ground); padding: 80px 24px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-top {
+      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px;
+      padding-bottom: 56px; border-bottom: 1px solid #2a2a2a;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .footer-brand .mark {
+      width: 36px; height: 36px; background: var(--ground); color: var(--ink);
+      border-radius: 8px; display: grid; place-items: center;
     }
     .footer-brand .mark svg { width: 20px; height: 20px; }
     .footer-brand .name { font-size: 16px; font-weight: 600; }
-    .footer-tag {
-      font-size: 14px;
-      color: var(--mute-soft);
-      max-width: 36ch;
-      line-height: 1.5;
-    }
-    .footer-col h5 {
-      font-size: 12px;
-      color: var(--mute-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 500;
-      margin-bottom: 14px;
-    }
+    .footer-tag { font-size: 14px; color: var(--mute-2); max-width: 36ch; line-height: 1.5; }
+    .footer-col h5 { font-size: 11px; color: var(--mute-2); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 14px; }
     .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .footer-col a {
-      color: var(--ground);
-      text-decoration: none;
-      font-size: 14px;
-      transition: color 0.15s;
-    }
-    .footer-col a:hover { color: var(--mute-soft); }
-    .footer-bottom {
-      padding-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--mute-soft);
-    }
-    .footer-bottom span.serif { font-family: 'Instrument Serif', serif; font-size: 14px; }
+    .footer-col a { color: var(--ground); text-decoration: none; font-size: 14px; }
+    .footer-col a:hover { color: var(--mute-2); }
+    .footer-bottom { padding-top: 24px; display: flex; justify-content: space-between; font-size: 12px; color: var(--mute-2); }
+    .footer-bottom .italic-serif { font-size: 14px; }
 
-    /* ============== MOBILE ============== */
-    @media (max-width: 760px) {
-      .topbar { top: 12px; padding: 0 12px; }
-      .topbar-inner { padding: 8px 10px 8px 14px; gap: 12px; }
-      .topbar nav a:not(.cta) { display: none; }
+    /* MOBILE */
+    @media (max-width: 860px) {
+      .topbar { top: 10px; padding: 0 12px; }
+      .topbar-inner { padding: 6px 6px 6px 14px; gap: 10px; }
+      .topbar nav a:not(.pill-cta) { display: none; }
       .topbar .brand-name { display: none; }
-
-      .hero { padding: 120px 20px 48px; }
-      .hero h1 { font-size: 36px; max-width: 100%; }
+      .topbar nav .pill-cta { padding: 4px 4px 4px 14px; font-size: 13px; }
+      .topbar nav .pill-cta .arrow { width: 22px; height: 22px; }
+      .hero { padding: 110px 20px 40px; }
+      .hero h1 { font-size: 40px; max-width: 100%; }
       .hero .sub { font-size: 16px; }
-      .pill-input { padding: 5px 5px 5px 16px; }
-      .pill-input button { padding: 10px 16px; font-size: 13px; }
-      .pill-input input { font-size: 14px; }
-
-      .features { padding: 10px 20px 60px; }
-      .features-grid { grid-template-columns: 1fr; gap: 12px; }
-
-      .mission { padding: 24px 20px 80px; }
+      .section { padding: 56px 20px; }
+      .cards-grid, .pillars, .stats-grid { grid-template-columns: 1fr; }
+      .pillars { border-radius: 16px; }
+      .pillar { border-left: none; border-bottom: 1px solid var(--rule); min-height: auto; }
+      .pillar:last-child { border-bottom: none; }
+      .cut-card { min-height: 260px; }
+      .stat-card .stat-big { font-size: 72px; }
       .mission-card { padding: 36px 24px 28px; }
       .mission-card .top-icon { right: 24px; }
-      .mission-card h2 { font-size: 24px; }
-
-      .how { padding: 60px 20px 80px; }
-      .how h2 { font-size: 28px; margin-bottom: 32px; }
-      .steps { grid-template-columns: 1fr 1fr; gap: 10px; }
-
+      .mission-card h2 { font-size: 26px; }
+      .coverage { grid-template-columns: 1fr; gap: 32px; }
+      .bubbles { height: 420px; }
       .big-cta { padding: 60px 20px 80px; }
-      .big-cta h2 { font-size: 32px; }
-      .big-cta .sub { font-size: 16px; }
-
-      .faq { padding: 10px 20px 80px; }
-      .faq h2 { font-size: 26px; }
-
       footer { padding: 56px 20px 24px; }
       .footer-top { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
       .footer-bottom { flex-direction: column; gap: 8px; }
     }
 
-    /* ============== MOTION ============== */
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .hero .icon-chip { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 0ms both; }
-    .hero .beta-tag  { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 80ms both; }
-    .hero h1         { animation: rise 0.6s cubic-bezier(.2,.7,.2,1) 160ms both; }
-    .hero .sub       { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 280ms both; }
-    .hero .pill-input{ animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 380ms both; }
-    .hero .social-proof { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 460ms both; }
-
+    @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .hero .beta-tag { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 60ms both; }
+    .hero h1 { animation: rise 0.6s cubic-bezier(.2,.7,.2,1) 160ms both; }
+    .hero .sub { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 280ms both; }
+    .hero .pill-input { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 380ms both; }
+    .hero .social-proof { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 480ms both; }
     .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
     .reveal.in { opacity: 1; transform: translateY(0); }
-    .reveal.d1 { transition-delay: 60ms; }
-    .reveal.d2 { transition-delay: 120ms; }
-    .reveal.d3 { transition-delay: 180ms; }
-    .reveal.d4 { transition-delay: 240ms; }
+    .reveal.d1 { transition-delay: 70ms; }
+    .reveal.d2 { transition-delay: 140ms; }
+    .reveal.d3 { transition-delay: 210ms; }
+    .reveal.d4 { transition-delay: 280ms; }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.001s !important;
-        animation-delay: 0s !important;
-        transition-duration: 0.001s !important;
-      }
+      *, *::before, *::after { animation-duration: 0.001s !important; animation-delay: 0s !important; transition-duration: 0.001s !important; }
     }
   </style>
 </head>
@@ -714,81 +446,239 @@
     </a>
     <nav>
       <a href="#how">איך זה עובד</a>
+      <a href="#coverage">הכיסוי</a>
       <a href="#faq">שאלות</a>
       <a href="https://github.com/" target="_blank">GitHub</a>
-      <a href="app.html" class="cta">פתחו את הכלי</a>
+      <a href="app.html" class="pill-cta">
+        פתחו את הכלי
+        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
     </nav>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- ============== HERO ============== -->
+  <!-- HERO -->
   <section class="hero">
-    <div class="icon-chip" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 16.92V20a2 2 0 0 1-2.18 2A19.86 19.86 0 0 1 2 4.18 2 2 0 0 1 4 2h3.09a2 2 0 0 1 2 1.72c.13.9.37 1.76.72 2.57a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.81.35 1.67.59 2.57.72A2 2 0 0 1 22 16.92z"/>
-        <line x1="4" y1="20" x2="20" y2="4" stroke="#c4242a" stroke-width="2.2" stroke-linecap="round"/>
-      </svg>
-    </div>
-
     <div class="beta-tag">גרסה 0.1 · קוד פתוח, חינמי</div>
-
     <h1>מחקו את עצמכם<br/>מרשימות של <em>ספאמרים</em></h1>
-
     <p class="sub">מספרי מתעד שיחה שקיבלתם, מזהה את הגוף, ומכין בקשה חוקית למחיקת המידע עליכם — בחמש דקות, בלי עורכת דין.</p>
-
     <form class="pill-input" onsubmit="event.preventDefault(); openApp();">
       <input type="text" id="hero-input" placeholder="הדביקו את המספר שהתקשר אליכם..." />
-      <button type="submit">סרוק עכשיו →</button>
+      <button type="submit">
+        סרוק
+        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
     </form>
-
     <div class="social-proof">
       <div class="avatars" aria-hidden="true">
-        <div class="avatar a1"></div>
-        <div class="avatar a2"></div>
-        <div class="avatar a3"></div>
+        <div class="avatar a1"></div><div class="avatar a2"></div><div class="avatar a3"></div>
       </div>
       <span><strong style="color: var(--ink); font-weight: 600;">50+</strong> גופים ישראליים ובינלאומיים ברשימת היעדים</span>
     </div>
   </section>
 
-  <!-- ============== FEATURES ============== -->
-  <section class="features">
-    <div class="features-grid">
-      <div class="feat-card reveal">
-        <div class="f-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
+  <!-- 4 CUT-CARDS -->
+  <section class="section" id="how">
+    <div class="section-head">
+      <h2>לא רק פרטיות. <em>שליטה</em>.</h2>
+      <p>ארבעה שלבים הופכים שיחה מעצבנת לתיק משפטי שהחוק מכיר בו — כל אחד עם ראיות משלו.</p>
+    </div>
+    <div class="cards-grid">
+      <article class="cut-card reveal">
+        <div class="cut-top">
+          <div class="cut-label">01 ·<br/>תיעוד</div>
+          <div class="cut-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <p class="cut-body">כל פנייה שמגיעה — מספר, תאריך, ערוץ, ומה הם ידעו עליכם. סימון קצר, בלי להעלות פרטים רגישים.</p>
+        <div class="cut-diagram" aria-hidden="true">
+          <svg viewBox="0 0 200 130" fill="none" stroke="#0a0a0a" stroke-width="1">
+            <path d="M40 90 L100 60 L160 90 L100 120 Z" stroke-dasharray="2 2"/>
+            <path d="M40 75 L100 45 L160 75 L100 105 Z" fill="#fafaf7"/>
+            <path d="M40 75 L100 45 L160 75 L100 105 Z"/>
+            <text x="100" y="78" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#0a0a0a" stroke="none">3.11.2026</text>
+            <text x="100" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#6b6b6b" stroke="none">073-XXXXXXX</text>
           </svg>
         </div>
-        <h3>תיעוד מהיר</h3>
-        <p>פנייה שקיבלתם הופכת לתיק משפטי בכמה שניות</p>
+      </article>
+
+      <article class="cut-card reveal d1">
+        <div class="cut-top">
+          <div class="cut-label">02 ·<br/>זיהוי</div>
+          <div class="cut-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <p class="cut-body">מתוך רשימה של חמישים וקצת גופים — מפלגות, בנקים, ביטוח, לידים — הכלי מציע מי פנה.</p>
+        <div class="cut-diagram" aria-hidden="true">
+          <svg viewBox="0 0 200 130" fill="none" stroke="#0a0a0a" stroke-width="1">
+            <circle cx="40" cy="30" r="8" fill="#fafaf7"/><circle cx="40" cy="30" r="8"/>
+            <circle cx="170" cy="35" r="8" fill="#fafaf7"/><circle cx="170" cy="35" r="8"/>
+            <circle cx="30" cy="90" r="8" fill="#fafaf7"/><circle cx="30" cy="90" r="8"/>
+            <circle cx="175" cy="95" r="8" fill="#fafaf7"/><circle cx="175" cy="95" r="8"/>
+            <circle cx="100" cy="65" r="18" fill="#0a0a0a"/>
+            <path d="M48 32 L82 60 M162 38 L118 60 M38 85 L82 70 M167 92 L118 70" stroke-dasharray="2 2"/>
+            <text x="100" y="69" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#f5f3ee" stroke="none" font-weight="500">?</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="cut-card reveal d2">
+        <div class="cut-top">
+          <div class="cut-label">03 ·<br/>ניסוח</div>
+          <div class="cut-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <p class="cut-body">מכתב לפי סעיף 13, 14 או 17ו — בהתאם למטרה. לגופים בחו"ל: GDPR Article 17.</p>
+        <div class="cut-diagram" aria-hidden="true">
+          <svg viewBox="0 0 200 130" fill="none" stroke="#0a0a0a" stroke-width="1">
+            <path d="M60 15 L140 15 L140 110 L60 110 Z" fill="#fafaf7"/>
+            <path d="M60 15 L140 15 L140 110 L60 110 Z"/>
+            <line x1="68" y1="30" x2="132" y2="30"/>
+            <line x1="68" y1="40" x2="124" y2="40"/>
+            <line x1="68" y1="55" x2="132" y2="55"/>
+            <line x1="68" y1="63" x2="128" y2="63"/>
+            <line x1="68" y1="71" x2="118" y2="71"/>
+            <line x1="68" y1="85" x2="100" y2="85"/>
+            <circle cx="125" cy="95" r="14" stroke="#c4242a" stroke-width="1.2" fill="none" transform="rotate(-8 125 95)"/>
+            <text x="125" y="93" text-anchor="middle" font-family="Inter" font-size="6" fill="#c4242a" stroke="none" transform="rotate(-8 125 95)">§17ו</text>
+            <text x="125" y="100" text-anchor="middle" font-family="Inter" font-size="4" fill="#c4242a" stroke="none" transform="rotate(-8 125 95)">מספרי</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="cut-card reveal d3">
+        <div class="cut-top">
+          <div class="cut-label">04 ·<br/>מעקב</div>
+          <div class="cut-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <p class="cut-body">30 יום הזמן החוקי למענה. לא ענו? כפתור אחד מכין תלונה לרשות להגנת הפרטיות.</p>
+        <div class="cut-diagram" aria-hidden="true">
+          <svg viewBox="0 0 200 130" fill="none" stroke="#0a0a0a" stroke-width="1">
+            <circle cx="100" cy="65" r="46" fill="#fafaf7"/>
+            <circle cx="100" cy="65" r="46"/>
+            <text x="100" y="32" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#6b6b6b" stroke="none">0</text>
+            <text x="134" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#6b6b6b" stroke="none">15</text>
+            <text x="66" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#6b6b6b" stroke="none">45</text>
+            <text x="100" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#6b6b6b" stroke="none">30</text>
+            <path d="M100 65 L100 101" stroke="#c4242a" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="100" cy="65" r="3" fill="#c4242a" stroke="none"/>
+          </svg>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="section">
+    <div class="section-head">
+      <h2>מה שאתם <em>מקבלים</em>.</h2>
+      <p>המוצר שלם. אין tier, אין פיצ'ר נעול, אין קוד שרות סגור.</p>
+    </div>
+    <div class="pillars reveal">
+      <div class="pillar featured">
+        <h4>חינמי</h4>
+        <p>ללא תשלום, ללא הרשמה, ללא פרסומות. לתמיד.</p>
+        <div class="pillar-diagram" aria-hidden="true">
+          <svg viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="60" cy="40" r="26"/>
+            <text x="60" y="48" text-anchor="middle" font-family="Fraunces" font-size="22" fill="currentColor" stroke="none" font-weight="500">₪0</text>
+          </svg>
+        </div>
       </div>
-      <div class="feat-card reveal d1">
-        <div class="f-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L15 8l6 1-4.5 4.5 1 6L12 17l-5.5 2.5 1-6L3 9l6-1z"/>
+      <div class="pillar">
+        <h4>מקומי</h4>
+        <p>הנתונים נשמרים בדפדפן. אין שרת, אין מסד, אין אנליטיקס.</p>
+        <div class="pillar-diagram" aria-hidden="true">
+          <svg viewBox="0 0 120 80" fill="none" stroke="#0a0a0a" stroke-width="1.2">
+            <rect x="20" y="20" width="80" height="48" rx="4"/>
+            <circle cx="30" cy="30" r="2" fill="#0a0a0a"/>
+            <circle cx="38" cy="30" r="2" fill="#0a0a0a"/>
+            <circle cx="46" cy="30" r="2" fill="#0a0a0a"/>
+            <line x1="20" y1="38" x2="100" y2="38"/>
+            <rect x="30" y="46" width="60" height="4" fill="#0a0a0a" opacity="0.1" stroke="none"/>
+            <rect x="30" y="54" width="40" height="4" fill="#0a0a0a" opacity="0.1" stroke="none"/>
           </svg>
         </div>
-        <h3>נוסח חוקי</h3>
-        <p>מכתב לפי חוק הגנת הפרטיות, מוכן לשליחה</p>
       </div>
-      <div class="feat-card reveal d2">
-        <div class="f-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="9"/>
-            <polyline points="12 7 12 12 15 14"/>
+      <div class="pillar">
+        <h4>חוקי</h4>
+        <p>סעיפים 13, 14, 17ו לחוק הגנת הפרטיות, ו-GDPR לחו"ל.</p>
+        <div class="pillar-diagram" aria-hidden="true">
+          <svg viewBox="0 0 120 80" fill="none" stroke="#0a0a0a" stroke-width="1.2">
+            <path d="M60 15 L75 25 L75 55 L60 65 L45 55 L45 25 Z"/>
+            <path d="M52 40 L58 46 L68 34" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <h3>מעקב של 30 יום</h3>
-        <p>תזכורת + כפתור תלונה אחרי שחלף הזמן החוקי</p>
+      </div>
+      <div class="pillar">
+        <h4>פתוח</h4>
+        <p>רישיון MIT. קוד, נוסחים ורשימת הגופים גלויים ב-GitHub.</p>
+        <div class="pillar-diagram" aria-hidden="true">
+          <svg viewBox="0 0 120 80" fill="none" stroke="#0a0a0a" stroke-width="1.2">
+            <path d="M45 30 L35 40 L45 50" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+            <path d="M75 30 L85 40 L75 50" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+            <path d="M68 25 L52 55" stroke-linecap="round" stroke-width="1.6"/>
+          </svg>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ============== MISSION ============== -->
+  <!-- STATS big faded -->
+  <section class="section">
+    <div class="section-head">
+      <h2>המספרים <em>שמאחורי</em> מספרי.</h2>
+      <p>מה שהחוק נותן לכם, וכמה המעקב משלם את עצמו.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <div class="stat-body">מתווכי מידע בינלאומיים שאוספים עליכם פרטים — לרובם לא נתתם הסכמה.</div>
+        <div class="stat-big">970</div>
+      </div>
+      <div class="stat-card featured reveal d1">
+        <div class="stat-body"><strong>ימים</strong> — זמן המענה שהחוק מחייב גוף לתת, מרגע שקיבל את הבקשה.</div>
+        <div class="stat-big">30</div>
+      </div>
+      <div class="stat-card reveal d2">
+        <div class="stat-body">גופים ישראליים ובינלאומיים ברשימה — מתרחבת כל שבוע.</div>
+        <div class="stat-big">50+</div>
+      </div>
+      <div class="stat-card reveal d3">
+        <div class="stat-body">פרטים שלכם שעוברים דרכנו. הכל נשמר בדפדפן שלכם בלבד.</div>
+        <div class="stat-big">0</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COVERAGE bubbles -->
+  <section class="section" id="coverage">
+    <div class="coverage">
+      <div class="bubbles reveal" aria-hidden="true">
+        <div class="bubble" style="width:92px; height:92px; top:20px; right:40%;">כלל ביטוח</div>
+        <div class="bubble" style="width:110px; height:110px; top:60px; right:5%;">בנק הפועלים</div>
+        <div class="bubble" style="width:80px; height:80px; top:10px; right:2%;">סלקום</div>
+        <div class="bubble b-leak" style="width:96px; height:96px; top:130px; right:30%;">שופרסל</div>
+        <div class="bubble" style="width:84px; height:84px; top:170px; right:62%;">הליכוד</div>
+        <div class="bubble b-intl" style="width:100px; height:100px; top:200px; right:10%;">Experian</div>
+        <div class="bubble" style="width:76px; height:76px; top:260px; right:50%;">מגדל</div>
+        <div class="bubble" style="width:92px; height:92px; top:260px; right:0%;">בזק</div>
+        <div class="bubble b-intl" style="width:84px; height:84px; top:330px; right:30%;">Acxiom</div>
+        <div class="bubble b-leak" style="width:88px; height:88px; top:340px; right:65%;">אטרף</div>
+        <div class="bubble" style="width:80px; height:80px; top:350px; right:5%;">יש עתיד</div>
+      </div>
+      <div class="text">
+        <h2>פועלים מול <em>כולם</em>.</h2>
+        <p>מפלגות ומטות בחירות. בנקים גדולים וביטוחים. חברות סלולר, רשתות קמעונאות, מועדוני לקוחות. מתווכי לידים, גופים שחוו דליפת מידע, ומאגרים בינלאומיים.</p>
+        <p>כל גוף ברשימה — נוסח מותאם, אימייל מאומת, סעיף החוק המתאים.</p>
+        <div class="legend">
+          <span>ישראל</span>
+          <span class="intl">בינלאומי</span>
+          <span class="leak">דלף מידע</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISSION -->
   <section class="mission">
     <div class="mission-card reveal">
       <div class="top-icon" aria-hidden="true">
@@ -797,16 +687,14 @@
         </svg>
       </div>
       <span class="badge">המשימה</span>
-      <h2>להחזיר <em>לך</em> את השליטה<br/>על הפרטים שלכם.</h2>
-      <p>ביום הבחירות התקשרו 11 מתנדבים ממפלגות — ידעו את השם שלכם, את השכונה, לפעמים גם את גיל הילדים. לא נתתם לאף אחד את הפרטים. הם הגיעו ממאגרי מידע שאף פעם לא הסכמת שיאספו.</p>
-      <p>חוק הגנת הפרטיות התשמ"א־1981 נותן לך זכות לבקש הסבר, להפסיק פניות, ולדרוש מחיקה. הבעיה היא שלכל גוף פרוצדורה אחרת, וזה לוקח שבועות. מספרי עושה את העבודה בחמש דקות.</p>
-
-      <div class="stats">
+      <h2>להחזיר <em>לכם</em> את השליטה<br/>על הפרטים שלכם.</h2>
+      <p>ביום הבחירות התקשרו 11 מתנדבים ממפלגות — ידעו את השם, את השכונה, לפעמים גם את גיל הילדים. לא נתתם לאף אחד מהם את הפרטים. הם הגיעו ממאגרים שאף פעם לא הסכמתם שיאספו.</p>
+      <p>חוק הגנת הפרטיות התשמ"א־1981 נותן לכם זכות לבקש הסבר, להפסיק פניות, ולדרוש מחיקה. הבעיה היא שלכל גוף פרוצדורה אחרת, וזה לוקח שבועות. מספרי עושה את העבודה בחמש דקות.</p>
+      <div class="stats-mini">
         <div class="stat"><span>תאריך השקה:</span><strong>נובמבר 2026</strong></div>
         <div class="stat"><span>רשימת היעדים:</span><strong>50+ גופים ישראליים ובינלאומיים</strong></div>
         <div class="stat"><span>נבנה עבור:</span><strong>כל אחד שהגיע לקצה הסבלנות</strong></div>
       </div>
-
       <div class="signature">
         <div class="avatar"></div>
         <div>
@@ -817,78 +705,54 @@
     </div>
   </section>
 
-  <!-- ============== HOW IT WORKS ============== -->
-  <section class="how" id="how">
-    <span class="eyebrow">איך זה עובד</span>
-    <h2>שלושים יום,<br/>מכתב אחד <em>שעובד</em>.</h2>
-    <div class="steps">
-      <div class="step-card reveal">
-        <div class="step-num">01 · תיעוד</div>
-        <h4>תעדו פנייה</h4>
-        <p>מי התקשר, מתי, ומה הם ידעו עליכם.</p>
-      </div>
-      <div class="step-card reveal d1">
-        <div class="step-num">02 · זיהוי</div>
-        <h4>זהו את הגוף</h4>
-        <p>בנק, ביטוח, מפלגה, מתווך לידים — הצעה אוטומטית.</p>
-      </div>
-      <div class="step-card reveal d2">
-        <div class="step-num">03 · נוסח</div>
-        <h4>הכינו מכתב</h4>
-        <p>לפי סעיף 13, 14 או 17ו — או GDPR לחו"ל.</p>
-      </div>
-      <div class="step-card reveal d3">
-        <div class="step-num">04 · מעקב</div>
-        <h4>עקבו 30 יום</h4>
-        <p>לא ענו? כפתור אחד לתלונה לרשות להגנת הפרטיות.</p>
-      </div>
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="section-head">
+      <h2>שאלות <em>נפוצות</em>.</h2>
+    </div>
+    <div class="faq-wrap">
+      <details class="faq-item" open>
+        <summary>זה חוקי?</summary>
+        <p class="a">כן. חוק הגנת הפרטיות התשמ"א־1981 נותן לכל אדם זכות לדעת איזה מידע מוחזק עליו (סעיף 13), לדרוש הפסקת פנייה לדיוור ישיר (סעיף 17ו), ולדרוש מחיקה (סעיף 14). הנוסחים מצטטים את הסעיפים בצורה מדויקת.</p>
+      </details>
+      <details class="faq-item">
+        <summary>זה עולה כסף?</summary>
+        <p class="a">לא. קוד פתוח, רישיון MIT, ללא הרשמה, ללא פרסומות. שימוש אישי ומסחרי, הסבה של הקוד, שינוי — הכל מותר.</p>
+      </details>
+      <details class="faq-item">
+        <summary>הפרטים שלי נשלחים למישהו?</summary>
+        <p class="a">לא. הכל נשמר ב־localStorage של הדפדפן. אין שרת, אין מסד נתונים, אין אנליטיקס. אם תמחקו את הדפדפן — הנתונים ילכו איתו.</p>
+      </details>
+      <details class="faq-item">
+        <summary>מה אם לא עונים לי?</summary>
+        <p class="a">החוק מחייב מענה תוך 30 יום. הכלי מתריע כשעובר הזמן ומכין בלחיצה אחת טיוטה של תלונה לרשות להגנת הפרטיות.</p>
+      </details>
+      <details class="faq-item">
+        <summary>זה מחליף עורכת דין?</summary>
+        <p class="a">לא. למקרה פרטני, לתביעה, או למצב מורכב — התייעצו עם עו"ד. הכלי מכין את התיעוד שעו"ד תזדקק לו.</p>
+      </details>
+      <details class="faq-item">
+        <summary>איך אני יכול/ה לעזור?</summary>
+        <p class="a">תרמו ב־GitHub: הוספת גופים לרשימה, אימות של אימיילים שהשתנו, תרגום לערבית או לרוסית, תיקוני נוסח משפטי. כל שינוי עובר PR.</p>
+      </details>
     </div>
   </section>
 
-  <!-- ============== FAQ ============== -->
-  <section class="faq" id="faq">
-    <span class="eyebrow">שאלות</span>
-    <h2>כל מה ששאלתי <em>את עצמי</em><br/>לפני שבניתי את זה.</h2>
-
-    <details class="faq-item" open>
-      <summary>זה חוקי?</summary>
-      <p class="a">כן. חוק הגנת הפרטיות התשמ"א־1981 נותן לכל אדם זכות לדעת איזה מידע מוחזק עליו (סעיף 13), לדרוש הפסקת פנייה לדיוור ישיר (סעיף 17ו), ולדרוש מחיקה (סעיף 14). הנוסחים מצטטים את הסעיפים בצורה מדויקת.</p>
-    </details>
-    <details class="faq-item">
-      <summary>זה עולה כסף?</summary>
-      <p class="a">לא. קוד פתוח, רישיון MIT, ללא הרשמה, ללא פרסומות. שימוש אישי ומסחרי, הסבה של הקוד, שינוי — הכל מותר.</p>
-    </details>
-    <details class="faq-item">
-      <summary>הפרטים שלי נשלחים למישהו?</summary>
-      <p class="a">לא. הכל נשמר ב־localStorage של הדפדפן. אין שרת, אין מסד נתונים, אין אנליטיקס. אם תמחקו את הדפדפן — הנתונים ילכו איתו.</p>
-    </details>
-    <details class="faq-item">
-      <summary>מה אם לא עונים לי?</summary>
-      <p class="a">החוק מחייב מענה תוך 30 יום. הכלי מתריע כשעובר הזמן ומכין בלחיצה אחת טיוטה של תלונה לרשות להגנת הפרטיות.</p>
-    </details>
-    <details class="faq-item">
-      <summary>זה מחליף עורכת דין?</summary>
-      <p class="a">לא. למקרה פרטני, לתביעה, או למצב מורכב — התייעצו עם עו"ד. הכלי מכין את התיעוד שעו"ד תזדקק לו.</p>
-    </details>
-    <details class="faq-item">
-      <summary>איך אני יכולה לעזור?</summary>
-      <p class="a">תרמו ב־GitHub: הוספת גופים לרשימה, אימות של אימיילים שהשתנו, תרגום לערבית או לרוסית, תיקוני נוסח משפטי. כל שינוי עובר PR.</p>
-    </details>
-  </section>
-
-  <!-- ============== BIG CTA ============== -->
+  <!-- BIG CTA -->
   <section class="big-cta">
     <h2>הדרך הכי קצרה לעצור שיחה<br/>היא <em>לכתוב</em>.</h2>
-    <p class="sub">פתחו את הכלי עכשיו וקבלי את המכתב הראשון שלכם בחמש דקות.</p>
-    <div class="cta-actions">
-      <a href="app.html" class="btn btn-dark">פתחו את מספרי →</a>
-      <a href="https://github.com/" target="_blank" class="btn btn-ghost">עיינו בקוד</a>
+    <p>פתחו את הכלי עכשיו, קבלו את המכתב הראשון שלכם בחמש דקות.</p>
+    <div>
+      <a href="app.html" class="pill-cta-btn">
+        פתחו את מספרי
+        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+      <a href="https://github.com/" target="_blank" class="ghost-link">עיינו בקוד ב־GitHub</a>
     </div>
   </section>
 
 </main>
 
-<!-- ============== FOOTER ============== -->
 <footer>
   <div class="footer-inner">
     <div class="footer-top">
@@ -909,6 +773,7 @@
         <ul>
           <li><a href="app.html">פתחו את הכלי</a></li>
           <li><a href="#how">איך זה עובד</a></li>
+          <li><a href="#coverage">רשימת הגופים</a></li>
           <li><a href="#faq">שאלות נפוצות</a></li>
         </ul>
       </div>
@@ -923,28 +788,20 @@
     </div>
     <div class="footer-bottom">
       <span>© 2026 מספרי · אינו ייעוץ משפטי</span>
-      <span>בנוי בישראל · חלק מפינת <span class="serif">משווה ומעלה</span></span>
+      <span>בנוי בישראל · חלק מפינת <span class="italic-serif">משווה ומעלה</span></span>
     </div>
   </div>
 </footer>
 
 <script>
-  // Open app with number prefilled
   function openApp() {
     const num = document.getElementById('hero-input').value.trim();
-    if (num) {
-      sessionStorage.setItem('mispari.prefill-number', num);
-    }
+    if (num) sessionStorage.setItem('mispari.prefill-number', num);
     window.location.href = 'app.html';
   }
-
-  // Reveal on scroll
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
