@@ -68,16 +68,17 @@ body {
   height: 100vh;
 }
 .rail-mark {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   display: grid; place-items: center;
   background: var(--text);
   color: var(--ground);
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 14px;
+  border-radius: 7px;
   margin-bottom: 20px;
   cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
 }
+.rail-mark:hover { transform: rotate(-4deg); background: #1a1a1a; }
+.rail-mark svg { width: 22px; height: 22px; }
 .rail-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
 .rail-btn {
   width: 40px; height: 40px;
@@ -635,3 +636,231 @@ input[type="date"] { font-variant-numeric: tabular-nums; }
 }
 .app-footer a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--rule); }
 .app-footer a:hover { color: var(--text); }
+
+/* =============== MOTION =============== */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rise-sm {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes mark {
+  0%   { transform: scaleX(0); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+@keyframes blink-warn {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+@keyframes ring {
+  0%   { box-shadow: 0 0 0 0 rgba(146, 64, 14, 0.22); }
+  70%  { box-shadow: 0 0 0 6px rgba(146, 64, 14, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(146, 64, 14, 0); }
+}
+@keyframes sheen {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Page enter — greeting */
+.greeting h1 {
+  animation: rise 0.42s cubic-bezier(.2,.7,.2,1) both;
+}
+.greeting .meta {
+  animation: rise 0.42s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 60ms;
+}
+
+/* Tile stagger */
+.tile {
+  animation: rise 0.42s cubic-bezier(.2,.7,.2,1) both;
+  transition: transform 0.18s ease, border-color 0.15s ease;
+}
+.tile:nth-child(1) { animation-delay: 80ms; }
+.tile:nth-child(2) { animation-delay: 140ms; }
+.tile:nth-child(3) { animation-delay: 200ms; }
+.tile:nth-child(4) { animation-delay: 260ms; }
+.tile:hover { transform: translateY(-1px); border-color: var(--control); }
+
+/* Tile value count-up: grows up from the baseline */
+.tile .value {
+  display: inline-block;
+  transform-origin: right bottom;
+  animation: rise-sm 0.5s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 220ms;
+}
+
+/* Signal bar: subtle warning ring on mount, then quiet */
+.signal-bar {
+  animation: rise 0.4s cubic-bezier(.2,.7,.2,1) both, ring 1.6s ease-out 0.4s 2;
+  animation-delay: 300ms;
+}
+
+/* Panels stagger */
+.panel {
+  animation: rise 0.42s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 320ms;
+}
+.panel:nth-of-type(2) { animation-delay: 380ms; }
+.panel:nth-of-type(3) { animation-delay: 440ms; }
+.panel:nth-of-type(4) { animation-delay: 500ms; }
+
+/* Row entrance within a panel */
+.rows .row {
+  animation: rise-sm 0.32s cubic-bezier(.2,.7,.2,1) both;
+  transition: border-color 0.14s ease, transform 0.14s ease, background 0.14s ease;
+}
+.rows .row:nth-child(1) { animation-delay: 420ms; }
+.rows .row:nth-child(2) { animation-delay: 470ms; }
+.rows .row:nth-child(3) { animation-delay: 520ms; }
+.rows .row:nth-child(4) { animation-delay: 570ms; }
+.rows .row:nth-child(5) { animation-delay: 620ms; }
+.rows .row:hover {
+  transform: translateX(-2px);
+  background: var(--surface);
+}
+.rows .row:active { transform: translateX(-1px) scale(0.998); }
+
+/* Days-overdue number quietly blinks once */
+.row .r-meta .days.warn {
+  animation: blink-warn 2.4s ease-in-out 1s 2;
+}
+
+/* Section header on route change */
+.section-head {
+  animation: rise 0.4s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Steps: active one fades and pops its number */
+.steps {
+  animation: fade 0.3s ease both;
+  animation-delay: 60ms;
+}
+.steps .step { transition: color 0.3s ease; }
+.steps .step.active .n {
+  animation: rise-sm 0.32s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 160ms;
+}
+
+/* Fieldset entrance */
+.fieldset .field {
+  animation: rise-sm 0.34s cubic-bezier(.2,.7,.2,1) both;
+}
+.fieldset .field:nth-child(1) { animation-delay: 100ms; }
+.fieldset .field:nth-child(2) { animation-delay: 160ms; }
+.fieldset .field:nth-child(3) { animation-delay: 220ms; }
+.fieldset .field:nth-child(4) { animation-delay: 280ms; }
+.fieldset .field:nth-child(5) { animation-delay: 340ms; }
+.fieldset .field:nth-child(6) { animation-delay: 400ms; }
+
+/* Chip press */
+.chip { transition: all 0.14s ease; }
+.chip:active { transform: scale(0.96); }
+.chip.active {
+  animation: rise-sm 0.22s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Buttons feedback */
+.btn { transition: all 0.14s ease, transform 0.08s ease; }
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  animation: sheen 0.9s ease;
+}
+
+/* Choice cards */
+.choice {
+  animation: rise-sm 0.34s cubic-bezier(.2,.7,.2,1) both;
+  transition: border-color 0.16s ease, transform 0.14s ease;
+}
+.choice:nth-child(1) { animation-delay: 140ms; }
+.choice:nth-child(2) { animation-delay: 190ms; }
+.choice:nth-child(3) { animation-delay: 240ms; }
+.choice:nth-child(4) { animation-delay: 290ms; }
+.choice:active { transform: scale(0.995); }
+.choice .ci-check { transition: all 0.16s ease; }
+.choice.active .ci-check {
+  animation: rise-sm 0.22s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* Letter sheet enters as a document being laid down */
+.letter-sheet {
+  animation: rise 0.5s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 280ms;
+}
+.letter-meta {
+  animation: rise 0.42s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: 160ms;
+}
+
+/* Entity list items subtle enter */
+.entity-item {
+  animation: fade 0.25s ease both;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.entity-item:hover { transform: translateX(-2px); }
+.entity-item.selected {
+  animation: rise-sm 0.22s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Timeline dots pop in */
+.tl-item { animation: fade 0.3s ease both; }
+.tl-item:nth-child(1) { animation-delay: 160ms; }
+.tl-item:nth-child(2) { animation-delay: 220ms; }
+.tl-item:nth-child(3) { animation-delay: 280ms; }
+.tl-item:nth-child(4) { animation-delay: 340ms; }
+.tl-item::before { transition: transform 0.2s ease; }
+.tl-item:hover::before { transform: scale(1.3); }
+
+/* Rail buttons */
+.rail-btn { transition: color 0.14s ease, background 0.14s ease, transform 0.12s ease; }
+.rail-btn:active { transform: scale(0.92); }
+.rail-btn.active::before {
+  animation: mark 0.32s cubic-bezier(.2,.7,.2,1) both;
+  transform-origin: top;
+}
+
+/* Toast */
+.toast {
+  animation: rise 0.28s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Focus state */
+input:focus, textarea:focus, select:focus {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Count-up transition for tile values when updated */
+.tile .value.changed {
+  animation: rise-sm 0.4s cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Reduced motion: keep the content, drop the travel */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.001s !important;
+  }
+}
