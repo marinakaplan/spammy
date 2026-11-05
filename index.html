@@ -4,774 +4,691 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>מספרי · בקשת מחיקה חוקית, בחמש דקות</title>
-  <meta name="description" content="כלי קוד פתוח לישראלים. מתעד פניות ספאם, מזהה את הגוף, ומכין בקשה חוקית למחיקת המידע לפי חוק הגנת הפרטיות ו-GDPR." />
-  <meta property="og:title" content="מספרי" />
-  <meta property="og:description" content="כלי קוד פתוח למחיקת המידע האישי שלך מכל חברה שאוספת אותו." />
+  <meta name="description" content="כלי קוד פתוח לישראלים. מכין בקשת מחיקה חוקית לכל חברה שמחזיקה את הפרטים שלך, לפי חוק הגנת הפרטיות ו-GDPR." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Crect x='6' y='12' width='20' height='8' rx='1.5' stroke='%23f2eee2' stroke-width='1.4' fill='none'/%3E%3Cline x1='4' y1='22' x2='28' y2='10' stroke='%23c4242a' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Crect x='6' y='12' width='20' height='8' rx='1.5' stroke='%23fafaf7' stroke-width='1.4' fill='none'/%3E%3Cline x1='4' y1='22' x2='28' y2='10' stroke='%23fafaf7' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
   <style>
     :root {
+      --ground: #f6f4ee;
+      --ground-soft: #ededea;
+      --surface: #ffffff;
       --ink: #0a0a0a;
-      --ink-soft: #1a1a1a;
-      --ground: #f2eee2;
-      --ground-soft: #ebe6d6;
-      --paper: #ece6d4;
-      --mute: #6b6558;
-      --mute-soft: #8f8873;
-      --rule: #d8d1bd;
-      --accent: #c4242a;
-      --signal: #1d5fbf;
-      --dark-field: #0a0a0a;
+      --ink-soft: #2a2a2a;
+      --mute: #6b6b6b;
+      --mute-soft: #9a9a9a;
+      --rule: #e8e5df;
+      --rule-soft: #f0ede6;
+      --accent-green: #3ca55c;
+      --accent-red: #c4242a;
+      --accent-blue: #1d5fbf;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Geist', -apple-system, system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
       background: var(--ground);
       color: var(--ink);
       direction: rtl;
-      line-height: 1.55;
-      font-variant-numeric: tabular-nums;
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      font-feature-settings: "ss01", "cv11";
     }
-    .mono { font-family: 'Geist Mono', 'SF Mono', monospace; }
-    .serif { font-family: 'Fraunces', Georgia, serif; font-weight: 400; }
+    .serif { font-family: 'Instrument Serif', 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; }
+    .mono { font-family: ui-monospace, 'SF Mono', monospace; }
 
-    ::selection { background: var(--ink); color: var(--ground); }
-
-    /* ====================== HERO ====================== */
-
-    .hero {
-      height: 100vh;
-      min-height: 720px;
-      background: var(--dark-field);
-      color: var(--ground);
-      position: relative;
-      padding: 20px;
-      overflow: hidden;
-    }
-
-    /* Top bar inside the dark field */
-    .hero-nav {
-      position: absolute;
-      top: 32px;
-      left: 32px;
-      right: 32px;
+    /* ============== TOP BAR ============== */
+    .topbar {
+      position: fixed;
+      top: 20px; left: 0; right: 0;
+      z-index: 50;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 20;
-      font-size: 15px;
-    }
-    .hero-nav .nav-links {
-      display: flex;
-      gap: 32px;
-      align-items: center;
-    }
-    .hero-nav .nav-links a {
-      color: var(--ground);
-      text-decoration: none;
-      padding: 4px 0;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.15s;
-    }
-    .hero-nav .nav-links a:hover { border-color: var(--ground); }
-    .hero-nav .nav-links a.action { font-weight: 500; }
-    .hero-nav .nav-meta {
-      font-size: 13px;
-      color: var(--mute-soft);
-      font-family: 'Geist Mono', monospace;
-    }
-
-    /* The letter is the fixed left-half (47%), inset */
-    .hero-letter-stage {
-      position: absolute;
-      top: 20px;
-      right: 20px;        /* RTL: "left" in the sheet becomes right */
-      bottom: 20px;
-      width: calc(47% - 40px);
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--dark-field);
-      display: grid;
-      place-items: center;
-      padding: 48px;
-    }
-    .letter-doc {
-      width: 100%;
-      max-width: 420px;
-      aspect-ratio: 0.72;
-      background: var(--paper);
-      border-radius: 3px;
-      padding: 46px 42px;
-      font-size: 12.5px;
-      line-height: 1.75;
-      color: #1a1a1a;
-      box-shadow:
-        0 1px 0 rgba(0,0,0,0.3),
-        0 24px 48px rgba(0,0,0,0.5),
-        0 40px 80px rgba(0,0,0,0.35);
-      position: relative;
-      transform-origin: center;
-      animation: letter-land 0.9s cubic-bezier(.2,.7,.2,1) 200ms both;
-    }
-    @keyframes letter-land {
-      from { opacity: 0; transform: translateY(40px) rotate(-1.5deg); }
-      to   { opacity: 1; transform: translateY(0) rotate(0); }
-    }
-    .letter-doc .l-to {
-      font-size: 10.5px;
-      color: #6b6558;
-      margin-bottom: 10px;
-    }
-    .letter-doc .l-subject {
-      font-weight: 600;
-      margin-bottom: 20px;
-      font-size: 13.5px;
-      line-height: 1.4;
-    }
-    .letter-doc .l-body p { margin-bottom: 11px; }
-    .letter-doc .l-body ol {
-      margin-right: 18px;
-      margin-bottom: 11px;
-    }
-    .letter-doc .l-body ol li { margin-bottom: 4px; }
-    .strike {
-      position: relative;
-      display: inline;
-    }
-    .strike::after {
-      content: '';
-      position: absolute;
-      left: -2px; right: -2px;
-      top: 55%;
-      height: 2px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transform-origin: right;
-      animation: letter-strike 1.4s cubic-bezier(.2,.7,.2,1) 1.6s forwards;
-    }
-    @keyframes letter-strike { to { transform: scaleX(1); } }
-    .letter-doc .l-sig {
-      margin-top: 18px;
-      font-family: 'Geist Mono', monospace;
-      font-size: 10.5px;
-      color: #6b6558;
-    }
-    .letter-doc .l-seal {
-      position: absolute;
-      bottom: 34px;
-      left: 34px;
-      width: 68px; height: 68px;
-      border: 2px solid var(--accent);
-      border-radius: 50%;
-      display: grid; place-items: center;
-      transform: rotate(-12deg);
-      color: var(--accent);
-      font-size: 9px;
-      text-align: center;
-      line-height: 1.2;
-      font-weight: 600;
-      opacity: 0;
-      animation: seal-stamp 0.35s cubic-bezier(.2,.7,.2,1) 2.3s forwards;
-    }
-    @keyframes seal-stamp {
-      from { opacity: 0; transform: rotate(-32deg) scale(0.4); }
-      to   { opacity: 1; transform: rotate(-12deg) scale(1); }
-    }
-
-    /* The supporting sentence, at 44% height, centred on the right half's axis */
-    .hero-sentence {
-      position: absolute;
-      left: 20px;          /* RTL: "right half" is the left half */
-      top: 44%;
-      transform: translateY(-50%);
-      width: calc(53% - 40px);
-      padding: 0 64px;
-      display: flex;
-      align-items: center;
-      z-index: 15;
-    }
-    .hero-sentence p {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 32px;
-      font-weight: 400;
-      line-height: 1.25;
-      max-width: 26ch;
-      color: var(--ground);
-      letter-spacing: -0.015em;
-      animation: fade-rise 0.7s cubic-bezier(.2,.7,.2,1) 600ms both;
-    }
-    @keyframes fade-rise {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* The wordmark runs along the bottom, overlapping the letter */
-    .hero-wordmark {
-      position: absolute;
-      left: 20px;
-      right: calc(47% - 100px);   /* overlaps the letter by ~10% viewport */
-      bottom: 24px;
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(120px, 14vw, 220px);
-      font-weight: 300;
-      letter-spacing: -0.05em;
-      line-height: 0.9;
-      color: var(--ground);
-      z-index: 10;
-      pointer-events: none;
-      mix-blend-mode: difference;
-      white-space: nowrap;
-      animation: fade-rise 1s cubic-bezier(.2,.7,.2,1) 900ms both;
-    }
-
-    /* ====================== GLOBAL SECTION ====================== */
-
-    .page {
-      background: var(--ground);
-      position: relative;
-      padding: 0;
-    }
-
-    /* ====================== 1. INTRO — narrow column, empty field ====================== */
-
-    .intro {
-      padding: 160px 0;
-      position: relative;
-    }
-    .intro-col {
-      width: 340px;
-      max-width: 85%;
-      margin-right: 15vw;      /* RTL — "left edge at 15%" mirrored */
-    }
-    .intro-col p {
-      font-size: 16px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .intro-col p:first-child {
-      font-weight: 500;
-      color: var(--ink);
-      font-size: 17px;
-    }
-    .intro-col p:not(:first-child) { color: var(--mute); }
-    .intro-col .quiet-mark {
-      display: block;
-      margin-bottom: 36px;
-      font-family: 'Fraunces', Georgia, serif;
-      font-style: italic;
-      font-size: 13px;
-      color: var(--mute-soft);
-      letter-spacing: 0.02em;
-    }
-
-    /* ====================== 2. HOW IT WORKS — run-in column ====================== */
-
-    .how {
-      padding: 160px 0;
-      background: var(--ground-soft);
-    }
-    .how-inner {
-      width: 560px;
-      max-width: 90%;
-      margin: 0 auto;
-      margin-right: 30%;    /* "starts at about 30% of the viewport width" — RTL mirror */
-    }
-    .how-head {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 36px;
-      font-weight: 400;
-      letter-spacing: -0.015em;
-      line-height: 1.15;
-      margin-bottom: 56px;
-      color: var(--ink);
-    }
-    .how-stage {
-      margin-bottom: 64px;
-    }
-    .how-stage p {
-      font-size: 18px;
-      line-height: 1.6;
-      color: var(--mute);
-    }
-    .how-stage p .run-in {
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .how-stage .evidence {
-      margin-top: 20px;
-      padding: 18px 22px;
-      background: var(--ground);
-      border-radius: 4px;
-      font-family: 'Geist Mono', monospace;
-      font-size: 13px;
-      color: var(--mute);
-      position: relative;
-    }
-    .how-stage .evidence .ev-label {
-      position: absolute;
-      top: -9px;
-      right: 16px;
-      background: var(--ground-soft);
-      padding: 0 8px;
-      font-size: 10px;
-      color: var(--mute-soft);
-      text-transform: lowercase;
-      letter-spacing: 0.05em;
-    }
-    .how-stage .evidence .ev-line {
-      display: flex;
-      justify-content: space-between;
-      padding: 3px 0;
-    }
-    .how-stage .evidence .ev-line .k { color: var(--ink); }
-
-    /* ====================== 3. FEATURES — printed menu with scallop edges ====================== */
-
-    .features {
-      padding: 140px 0 160px;
-      background: var(--ink);
-      color: var(--ground);
-      position: relative;
-    }
-    .features-head {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 36px;
-      font-weight: 400;
-      text-align: center;
-      margin-bottom: 72px;
-      letter-spacing: -0.015em;
-      color: var(--ground);
-    }
-    .menu-sheet {
-      width: 560px;
-      max-width: 92%;
-      margin: 0 auto;
-      background: var(--paper);
-      color: var(--ink);
-      padding: 56px 48px;
-      position: relative;
-      font-family: 'Fraunces', Georgia, serif;
-      /* Scallop edges via SVG masks */
-    }
-    .menu-sheet::before,
-    .menu-sheet::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      height: 10px;
-      background: var(--ink);
-      -webkit-mask-size: 20px 20px;
-              mask-size: 20px 20px;
-      -webkit-mask-repeat: repeat-x;
-              mask-repeat: repeat-x;
-    }
-    .menu-sheet::before {
-      top: 0;
-      -webkit-mask-image: radial-gradient(circle at 10px 10px, transparent 7px, black 7.5px);
-              mask-image: radial-gradient(circle at 10px 10px, transparent 7px, black 7.5px);
-    }
-    .menu-sheet::after {
-      bottom: 0;
-      -webkit-mask-image: radial-gradient(circle at 10px 0, transparent 7px, black 7.5px);
-              mask-image: radial-gradient(circle at 10px 0, transparent 7px, black 7.5px);
-    }
-    .menu-sheet-head {
-      text-align: center;
-      font-size: 42px;
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 44px;
-      font-family: 'Fraunces', Georgia, serif;
-    }
-    .menu-sheet-head small {
-      display: block;
-      font-family: 'Fraunces', Georgia, serif;
-      font-style: italic;
-      font-size: 14px;
-      color: var(--mute);
-      margin-top: 10px;
-      font-weight: 400;
-    }
-    .m-group {
-      margin-bottom: 36px;
-    }
-    .m-group:last-child { margin-bottom: 0; }
-    .m-group h3 {
-      font-family: 'Geist', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--mute);
-      margin-bottom: 14px;
-    }
-    .m-row {
-      display: flex;
-      align-items: baseline;
-      padding: 10px 0;
-      font-size: 17px;
-      font-family: 'Fraunces', Georgia, serif;
-    }
-    .m-row + .m-row { border-top: none; }
-    .m-row .m-name { font-weight: 400; color: var(--ink); }
-    .m-row .m-leader {
-      flex: 1;
-      margin: 0 12px;
-      border-bottom: 3px dotted var(--rule);
-      position: relative;
-      top: -4px;
-      min-width: 20px;
-    }
-    .m-row .m-count {
-      font-family: 'Geist Mono', monospace;
-      font-size: 14px;
-      color: var(--ink);
-      font-variant-numeric: tabular-nums;
-      font-weight: 500;
-    }
-
-    /* ====================== 4. STATS — quiet figure lines ====================== */
-
-    .stats {
-      padding: 160px 0;
-      background: var(--ground);
-    }
-    .stats-inner {
-      width: 760px;
-      max-width: 92%;
-      margin: 0 auto;
-    }
-    .stats-head {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 32px;
-      font-weight: 400;
-      letter-spacing: -0.015em;
-      margin-bottom: 56px;
-      margin-right: 164px;   /* aligns with sentences' right edge */
-      color: var(--ink);
-    }
-    .stat-row {
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 24px;
-      padding: 28px 0;
-      align-items: baseline;
-    }
-    .stat-row + .stat-row { border-top: 1px solid var(--rule); }
-    .stat-fig {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 54px;
-      font-weight: 400;
-      text-align: left;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
-      letter-spacing: -0.02em;
-    }
-    .stat-fig.signal { color: var(--signal); }
-    .stat-fig.accent { color: var(--accent); }
-    .stat-desc {
-      font-size: 17px;
-      line-height: 1.5;
-      color: var(--mute);
-      max-width: 48ch;
-    }
-
-    /* ====================== 5. FAQ — answers as reading text ====================== */
-
-    .faq {
-      padding: 160px 0;
-      background: var(--ground-soft);
-    }
-    .faq-grid {
-      max-width: 1100px;
-      margin: 0 auto;
+      justify-content: center;
       padding: 0 24px;
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 72px;
-      align-items: start;
+      pointer-events: none;
     }
-    .faq-head {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 32px;
-      font-weight: 400;
-      letter-spacing: -0.015em;
-      line-height: 1.15;
+    .topbar-inner {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+      padding: 10px 14px 10px 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 999px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04);
     }
-    .faq-body {
-      columns: 2;
-      column-gap: 56px;
+    .topbar .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink);
     }
-    .faq-body .q {
-      break-inside: avoid;
+    .topbar .mark {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      background: var(--ink);
+      color: #fafaf7;
+      border-radius: 8px;
+    }
+    .topbar .mark svg { width: 18px; height: 18px; }
+    .topbar .brand-name { font-weight: 600; font-size: 15px; }
+    .topbar nav { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+    .topbar nav a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .topbar nav a:hover { background: rgba(10,10,10,0.05); }
+    .topbar nav a.cta {
+      background: var(--ink);
+      color: #fafaf7;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+    .topbar nav a.cta:hover { background: #2a2a2a; }
+
+    /* ============== HERO ============== */
+    .hero {
+      position: relative;
+      padding: 160px 24px 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Atmospheric background (faded clouds/paper texture) */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(180,180,180,0.25), transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 25%, rgba(160,160,170,0.2), transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(140,140,150,0.15), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero .icon-chip {
+      width: 44px; height: 44px;
+      background: var(--ink);
+      color: var(--ground);
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
       margin-bottom: 20px;
-      font-size: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    .hero .icon-chip svg { width: 22px; height: 22px; }
+
+    .hero .beta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--mute);
+      margin-bottom: 18px;
+      font-weight: 500;
+    }
+    .hero .beta-tag::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(60,165,92,0.2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(60,165,92,0.2); }
+      50%      { box-shadow: 0 0 0 6px rgba(60,165,92,0.1); }
+    }
+
+    .hero h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(42px, 5.6vw, 72px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      max-width: 14ch;
+      margin: 0 auto 24px;
+      color: var(--ink);
+    }
+    .hero h1 em {
+      font-family: 'Instrument Serif', 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+    }
+    .hero .sub {
+      font-size: 17px;
+      color: var(--mute);
+      max-width: 44ch;
+      margin: 0 auto 36px;
       line-height: 1.55;
     }
-    .faq-body .q .question {
-      font-weight: 600;
-      color: var(--ink);
+
+    /* Pill input with inline button */
+    .pill-input {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      padding: 6px 6px 6px 20px;
+      max-width: 460px;
+      margin: 0 auto 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, border-color 0.2s;
     }
-    .faq-body .q .answer {
+    .pill-input:focus-within {
+      border-color: var(--ink);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 14px 36px rgba(0,0,0,0.08);
+    }
+    .pill-input input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      padding: 10px 6px;
+      direction: rtl;
+    }
+    .pill-input input::placeholder { color: var(--mute-soft); }
+    .pill-input button {
+      background: var(--ink);
+      color: var(--ground);
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 22px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.08s;
+      white-space: nowrap;
+    }
+    .pill-input button:hover { background: #2a2a2a; }
+    .pill-input button:active { transform: translateY(1px); }
+
+    .hero .social-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
       color: var(--mute);
     }
-
-    /* ====================== 6. CTA — almost empty screen ====================== */
-
-    .cta {
-      padding: 240px 0 180px;
-      background: var(--ground);
-      min-height: 80vh;
+    .avatars {
       display: flex;
-      align-items: center;
+      flex-direction: row-reverse;
     }
-    .cta-inner {
-      width: 760px;
-      max-width: 92%;
+    .avatars .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--ground);
+      margin-left: -8px;
+      background-size: cover;
+      background-position: center;
+    }
+    .avatars .avatar.a1 { background: linear-gradient(135deg, #e89a7a, #d87659); }
+    .avatars .avatar.a2 { background: linear-gradient(135deg, #8a9bb8, #5d718f); }
+    .avatars .avatar.a3 { background: linear-gradient(135deg, #b89a7a, #8f7055); }
+
+    /* ============== FEATURE CARDS ============== */
+    .features {
+      padding: 20px 24px 100px;
+    }
+    .features-grid {
+      max-width: 1000px;
       margin: 0 auto;
-    }
-    .cta-sentence {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: 32px;
-      line-height: 1.25;
-      font-weight: 400;
-      max-width: 22ch;
-      color: var(--ink);
-      margin-bottom: 36px;
-      letter-spacing: -0.015em;
-    }
-    .cta-actions {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      align-items: center;
+    }
+    .feat-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-align: center;
+      border: 1px solid var(--rule);
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+    .feat-card .f-icon {
+      width: 40px; height: 40px;
+      background: var(--ink);
+      color: var(--ground);
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: grid; place-items: center;
+    }
+    .feat-card .f-icon svg { width: 20px; height: 20px; }
+    .feat-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .feat-card p {
+      font-size: 14px;
+      color: var(--mute);
+      line-height: 1.45;
     }
 
+    /* ============== MISSION CARD ============== */
+    .mission {
+      padding: 40px 24px 120px;
+      position: relative;
+    }
+    .mission-card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 24px;
+      padding: 48px 48px 40px;
+      position: relative;
+    }
+    .mission-card .top-icon {
+      position: absolute;
+      top: -24px;
+      right: 48px;
+      width: 48px; height: 48px;
+      background: var(--ink);
+      color: var(--ground);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    .mission-card .top-icon svg { width: 22px; height: 22px; }
+    .mission-card .badge {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--ink-soft);
+      background: var(--ground-soft);
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    .mission-card h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      margin-bottom: 20px;
+      color: var(--ink);
+    }
+    .mission-card h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .mission-card p {
+      font-size: 15px;
+      color: var(--mute);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .mission-card .stats {
+      margin-top: 26px;
+      margin-bottom: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mission-card .stats .stat {
+      font-size: 15px;
+      color: var(--ink);
+    }
+    .mission-card .stats .stat strong {
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .mission-card .stats .stat span { color: var(--mute); }
+    .mission-card .signature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 20px;
+      border-top: 1px solid var(--rule);
+    }
+    .mission-card .signature .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d87659, #a0543b);
+    }
+    .mission-card .signature .s-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .mission-card .signature .s-title { font-size: 13px; color: var(--mute); }
+
+    /* ============== HOW IT WORKS ============== */
+    .how {
+      padding: 80px 24px 120px;
+      text-align: center;
+      position: relative;
+    }
+    .how .eyebrow {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--ink-soft);
+      background: var(--surface);
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      margin-bottom: 18px;
+    }
+    .how h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(32px, 4vw, 44px);
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      max-width: 18ch;
+      margin: 0 auto 50px;
+    }
+    .how h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .steps {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+    .step-card:hover { transform: translateY(-2px); }
+    .step-card .step-num {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--mute-soft);
+      background: var(--ground-soft);
+      padding: 3px 9px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      font-family: ui-monospace, monospace;
+    }
+    .step-card h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .step-card p {
+      font-size: 13px;
+      color: var(--mute);
+      line-height: 1.5;
+    }
+
+    /* ============== BIG CTA ============== */
+    .big-cta {
+      padding: 100px 24px 140px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .big-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 50% 40% at 50% 40%, rgba(180,180,180,0.2), transparent 70%);
+      pointer-events: none;
+    }
+    .big-cta > * { position: relative; }
+    .big-cta h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      max-width: 16ch;
+      margin: 0 auto 20px;
+    }
+    .big-cta h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .big-cta .sub {
+      font-size: 17px;
+      color: var(--mute);
+      max-width: 44ch;
+      margin: 0 auto 32px;
+    }
+    .big-cta .cta-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 15px;
       font-weight: 500;
-      font-family: 'Geist', sans-serif;
-      border-radius: 4px;
+      font-family: inherit;
+      border-radius: 999px;
       border: 1px solid transparent;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.15s, color 0.15s, transform 0.08s;
+      line-height: 1;
+      transition: all 0.15s;
+    }
+    .btn-dark { background: var(--ink); color: var(--ground); }
+    .btn-dark:hover { background: #2a2a2a; }
+    .btn-ghost { color: var(--ink); border-color: var(--rule); background: var(--surface); }
+    .btn-ghost:hover { border-color: var(--ink); }
+
+    /* ============== FAQ ============== */
+    .faq {
+      padding: 20px 24px 120px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .faq .eyebrow {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--ink-soft);
+      background: var(--surface);
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      margin-bottom: 16px;
+    }
+    .faq h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 36px;
+    }
+    .faq h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .faq-item {
+      border-top: 1px solid var(--rule);
+      padding: 18px 0;
+    }
+    .faq-item:last-child { border-bottom: 1px solid var(--rule); }
+    .faq-item summary {
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+';
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--mute);
+      transition: transform 0.2s;
       line-height: 1;
     }
-    .btn-primary { background: var(--ink); color: var(--ground); border-color: var(--ink); }
-    .btn-primary:hover { background: #2a2a2a; }
-    .btn-primary:active { transform: translateY(1px); }
-    .btn-ghost { color: var(--ink); background: transparent; }
-    .btn-ghost:hover { color: var(--mute); }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item .a {
+      font-size: 15px;
+      color: var(--mute);
+      line-height: 1.6;
+      margin-top: 12px;
+      max-width: 60ch;
+    }
 
-    /* ====================== 7. FOOTER — split: picture half + menu half ====================== */
-
-    footer.site-footer {
+    /* ============== FOOTER ============== */
+    footer {
       background: var(--ink);
       color: var(--ground);
+      padding: 80px 24px 32px;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .footer-top {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 80vh;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      padding-bottom: 60px;
+      border-bottom: 1px solid #2a2a2a;
     }
-    .footer-plate {
-      background: var(--dark-field);
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      padding: 60px;
-    }
-    .footer-plate .big-mark {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(100px, 16vw, 240px);
-      font-weight: 300;
-      letter-spacing: -0.05em;
-      line-height: 0.9;
-      color: var(--ground);
-      text-align: center;
-    }
-    .footer-plate .big-mark small {
-      display: block;
-      font-family: 'Geist', sans-serif;
-      font-size: 13px;
-      color: var(--mute-soft);
-      letter-spacing: 0.08em;
-      margin-top: 24px;
-      font-weight: 400;
-      font-style: normal;
-    }
-    .footer-menu {
-      padding: 80px 60px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .footer-menu .top {
+    .footer-brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 56px;
+      margin-bottom: 16px;
     }
-    .footer-menu .top .fm-mark {
-      width: 32px; height: 32px;
-      display: grid; place-items: center;
+    .footer-brand .mark {
+      width: 36px; height: 36px;
       background: var(--ground);
       color: var(--ink);
-      border-radius: 6px;
+      border-radius: 8px;
+      display: grid; place-items: center;
     }
-    .footer-menu .top .fm-mark svg { width: 20px; height: 20px; }
-    .footer-menu .links {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .footer-menu .links a {
-      font-family: 'Fraunces', Georgia, serif;
-      font-size: clamp(32px, 2.6vw, 44px);
-      font-weight: 400;
-      color: var(--ground);
-      text-decoration: none;
-      padding: 6px 0;
-      line-height: 1.1;
-      transition: transform 0.2s ease, color 0.2s ease;
-      display: inline-block;
-      transform-origin: right;
-    }
-    .footer-menu .links:hover a:not(:hover) { color: var(--mute-soft); }
-    .footer-menu .links a:hover { transform: translateX(-10px); }
-    .footer-menu .sub {
-      display: flex;
-      gap: 56px;
-      margin-top: 48px;
+    .footer-brand .mark svg { width: 20px; height: 20px; }
+    .footer-brand .name { font-size: 16px; font-weight: 600; }
+    .footer-tag {
       font-size: 14px;
       color: var(--mute-soft);
+      max-width: 36ch;
+      line-height: 1.5;
     }
-    .footer-menu .sub strong { color: var(--ground); font-weight: 500; display: block; margin-bottom: 6px; }
-    .footer-menu .legal {
+    .footer-col h5 {
       font-size: 12px;
       color: var(--mute-soft);
-      margin-top: 32px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col a {
+      color: var(--ground);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.15s;
+    }
+    .footer-col a:hover { color: var(--mute-soft); }
+    .footer-bottom {
       padding-top: 24px;
-      border-top: 1px solid #2a2a2a;
       display: flex;
       justify-content: space-between;
+      font-size: 12px;
+      color: var(--mute-soft);
+    }
+    .footer-bottom span.serif { font-family: 'Instrument Serif', serif; font-size: 14px; }
+
+    /* ============== MOBILE ============== */
+    @media (max-width: 760px) {
+      .topbar { top: 12px; padding: 0 12px; }
+      .topbar-inner { padding: 8px 10px 8px 14px; gap: 12px; }
+      .topbar nav a:not(.cta) { display: none; }
+      .topbar .brand-name { display: none; }
+
+      .hero { padding: 120px 20px 48px; }
+      .hero h1 { font-size: 36px; max-width: 100%; }
+      .hero .sub { font-size: 16px; }
+      .pill-input { padding: 5px 5px 5px 16px; }
+      .pill-input button { padding: 10px 16px; font-size: 13px; }
+      .pill-input input { font-size: 14px; }
+
+      .features { padding: 10px 20px 60px; }
+      .features-grid { grid-template-columns: 1fr; gap: 12px; }
+
+      .mission { padding: 24px 20px 80px; }
+      .mission-card { padding: 36px 24px 28px; }
+      .mission-card .top-icon { right: 24px; }
+      .mission-card h2 { font-size: 24px; }
+
+      .how { padding: 60px 20px 80px; }
+      .how h2 { font-size: 28px; margin-bottom: 32px; }
+      .steps { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+      .big-cta { padding: 60px 20px 80px; }
+      .big-cta h2 { font-size: 32px; }
+      .big-cta .sub { font-size: 16px; }
+
+      .faq { padding: 10px 20px 80px; }
+      .faq h2 { font-size: 26px; }
+
+      footer { padding: 56px 20px 24px; }
+      .footer-top { grid-template-columns: 1fr; gap: 32px; padding-bottom: 32px; }
+      .footer-bottom { flex-direction: column; gap: 8px; }
     }
 
-    /* ====================== REVEAL ANIMATIONS ====================== */
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.8s ease, transform 0.8s cubic-bezier(.2,.7,.2,1);
+    /* ============== MOTION ============== */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+    .hero .icon-chip { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 0ms both; }
+    .hero .beta-tag  { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 80ms both; }
+    .hero h1         { animation: rise 0.6s cubic-bezier(.2,.7,.2,1) 160ms both; }
+    .hero .sub       { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 280ms both; }
+    .hero .pill-input{ animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 380ms both; }
+    .hero .social-proof { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) 460ms both; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
     .reveal.in { opacity: 1; transform: translateY(0); }
-    .reveal.d1 { transition-delay: 80ms; }
-    .reveal.d2 { transition-delay: 160ms; }
-    .reveal.d3 { transition-delay: 240ms; }
-    .reveal.d4 { transition-delay: 320ms; }
-
-    /* ====================== MOBILE ====================== */
-
-    @media (max-width: 900px) {
-      .hero {
-        height: auto;
-        min-height: 100vh;
-        padding: 12px;
-        padding-top: 72px;
-      }
-      .hero-nav {
-        top: 20px;
-        left: 20px;
-        right: 20px;
-      }
-      .hero-nav .nav-links { gap: 14px; font-size: 13px; }
-      .hero-nav .nav-links a:not(.action) { display: none; }
-      .hero-nav .nav-meta { display: none; }
-      .hero-letter-stage {
-        position: relative;
-        width: 100%;
-        top: 0; right: 0; bottom: 0; left: 0;
-        height: 60vh;
-        padding: 24px;
-        margin-bottom: 40px;
-      }
-      .letter-doc {
-        max-width: 280px;
-        padding: 26px 24px;
-        font-size: 11px;
-      }
-      .letter-doc .l-seal {
-        width: 54px; height: 54px;
-        bottom: 24px; left: 24px;
-        font-size: 8px;
-      }
-      .hero-sentence {
-        position: relative;
-        top: auto; left: auto;
-        width: 100%;
-        padding: 0 20px;
-        transform: none;
-        display: block;
-      }
-      .hero-sentence p {
-        font-size: 22px;
-        max-width: 100%;
-      }
-      .hero-wordmark {
-        position: relative;
-        right: auto; left: auto; bottom: auto;
-        font-size: 21vw;
-        padding: 40px 20px 20px;
-        mix-blend-mode: normal;
-        text-align: right;
-      }
-
-      .intro { padding: 72px 0; }
-      .intro-col { margin-right: 20px; width: calc(100% - 40px); }
-
-      .how { padding: 72px 20px; }
-      .how-inner { margin: 0; width: 100%; }
-      .how-head { font-size: 28px; margin-bottom: 36px; }
-      .how-stage p { font-size: 17px; }
-      .how-stage { margin-bottom: 44px; }
-
-      .features { padding: 72px 12px 96px; }
-      .menu-sheet { padding: 44px 24px; }
-      .menu-sheet-head { font-size: 32px; margin-bottom: 32px; }
-      .m-row { font-size: 15px; }
-      .m-row .m-count { font-size: 13px; }
-
-      .stats { padding: 72px 20px; }
-      .stats-head { margin-right: 100px; font-size: 26px; margin-bottom: 36px; }
-      .stat-row { grid-template-columns: 90px 1fr; gap: 16px; padding: 18px 0; }
-      .stat-fig { font-size: 36px; }
-      .stat-desc { font-size: 16px; }
-
-      .faq { padding: 72px 20px; }
-      .faq-grid { grid-template-columns: 1fr; gap: 28px; padding: 0; }
-      .faq-head { font-size: 26px; }
-      .faq-body { columns: 1; }
-
-      .cta { padding: 100px 20px 72px; min-height: 60vh; }
-      .cta-sentence { font-size: 24px; }
-
-      footer.site-footer { grid-template-columns: 1fr; min-height: auto; }
-      .footer-plate { padding: 60px 24px; }
-      .footer-menu { padding: 60px 24px; }
-      .footer-menu .links a { font-size: 32px; }
-      .footer-menu .sub { flex-direction: column; gap: 20px; }
-      .footer-menu .legal { flex-direction: column; gap: 8px; }
-    }
+    .reveal.d1 { transition-delay: 60ms; }
+    .reveal.d2 { transition-delay: 120ms; }
+    .reveal.d3 { transition-delay: 180ms; }
+    .reveal.d4 { transition-delay: 240ms; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -784,219 +701,244 @@
 </head>
 <body>
 
-<!-- =================== HERO =================== -->
-<section class="hero" id="top">
-  <nav class="hero-nav">
-    <div class="nav-meta">מספרי · גרסה 0.1 · <a href="https://github.com/" style="color:inherit;">GitHub</a></div>
-    <div class="nav-links">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">
+      <span class="mark" aria-label="מספרי">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="4" y1="22" x2="28" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">מספרי</span>
+    </a>
+    <nav>
       <a href="#how">איך זה עובד</a>
-      <a href="#features">מה יש בפנים</a>
       <a href="#faq">שאלות</a>
-      <a href="app.html" class="action">פתחי את הכלי →</a>
+      <a href="https://github.com/" target="_blank">GitHub</a>
+      <a href="app.html" class="cta">פתחי את הכלי</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============== HERO ============== -->
+  <section class="hero">
+    <div class="icon-chip" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 16.92V20a2 2 0 0 1-2.18 2A19.86 19.86 0 0 1 2 4.18 2 2 0 0 1 4 2h3.09a2 2 0 0 1 2 1.72c.13.9.37 1.76.72 2.57a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.81.35 1.67.59 2.57.72A2 2 0 0 1 22 16.92z"/>
+        <line x1="4" y1="20" x2="20" y2="4" stroke="#c4242a" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
     </div>
-  </nav>
 
-  <div class="hero-letter-stage">
-    <article class="letter-doc" aria-label="מכתב דרישה — נוסח מספרי">
-      <div class="l-to">אל: חברת ביטוח כללית בע"מ · privacy@example.co.il</div>
-      <div class="l-subject">דרישה להפסקת פניות ומחיקת מידע אישי</div>
-      <div class="l-body">
-        <p>שמי מרינה רודינסקי, ת.ז. <span class="mono">031234567</span>.</p>
-        <p>ביום 3.11.2026 נוצר איתי קשר טלפוני מטעמכם. בידי הפונה היה: <span class="strike">שמי המלא, השכונה שבה אני גרה, שם בן זוגי</span>.</p>
-        <p>בהתאם לסעיף 17ו לחוק הגנת הפרטיות, התשמ"א־1981, הריני דורשת:</p>
-        <ol>
-          <li>להפסיק מיידית כל פנייה אליי לצורכי דיוור ישיר.</li>
-          <li>למחוק את פרטיי מכל רשימת תפוצה או מאגר שיווקי.</li>
-          <li>לאשר בכתב את ביצוע המחיקה תוך 30 יום.</li>
-        </ol>
-        <p>המשך פניות לאחר מועד זה יהווה הפרה של החוק ויגרור פנייה לרשות להגנת הפרטיות.</p>
+    <div class="beta-tag">גרסה 0.1 · קוד פתוח, חינמי</div>
+
+    <h1>מחקי את עצמך<br/>מרשימות של <em>ספאמרים</em></h1>
+
+    <p class="sub">מספרי מתעד שיחה שקיבלת, מזהה את הגוף, ומכין בקשה חוקית למחיקת המידע עליך — בחמש דקות, בלי עורכת דין.</p>
+
+    <form class="pill-input" onsubmit="event.preventDefault(); openApp();">
+      <input type="text" id="hero-input" placeholder="הדביקי את המספר שהתקשר אלייך..." />
+      <button type="submit">סרוק עכשיו →</button>
+    </form>
+
+    <div class="social-proof">
+      <div class="avatars" aria-hidden="true">
+        <div class="avatar a1"></div>
+        <div class="avatar a2"></div>
+        <div class="avatar a3"></div>
       </div>
-      <div class="l-sig">— מרינה רודינסקי · 5.11.2026</div>
-      <div class="l-seal">נוסח<br/>מספרי<br/><strong>§17ו</strong></div>
-    </article>
-  </div>
-
-  <div class="hero-sentence">
-    <p>בקשה אחת, אחרי שלושים יום היא הופכת לתלונה. זו הדרך הקצרה ביותר להפסיק את השיחות.</p>
-  </div>
-
-  <div class="hero-wordmark">מספרי</div>
-</section>
-
-<!-- =================== PAGE =================== -->
-<main class="page">
-
-  <!-- 1. INTRO -->
-  <section class="intro">
-    <div class="intro-col reveal">
-      <span class="quiet-mark">— מדוע הכלי קיים</span>
-      <p>ביום הבחירות התקשרו 11 מתנדבים ממפלגות. הם ידעו את השם שלך, את השכונה, לפעמים גם את שמות הילדים.</p>
-      <p>לא נתת את הפרטים לאף אחד מהם. הם הגיעו ממאגרי מידע שאף פעם לא הסכמת שיאספו.</p>
-      <p>חוק הגנת הפרטיות התשמ"א־1981 נותן לך זכות לבקש הסבר, להפסיק פניות, ולדרוש מחיקה. הבעיה היא שלכל גוף פרוצדורה אחרת, וזה לוקח שבועות.</p>
-      <p>מספרי עושה את העבודה הזו בחמש דקות.</p>
+      <span><strong style="color: var(--ink); font-weight: 600;">50+</strong> גופים ישראליים ובינלאומיים ברשימת היעדים</span>
     </div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
-  <section class="how" id="how">
-    <div class="how-inner">
-      <h2 class="how-head reveal">שלושים יום, ארבעה שלבים, מכתב אחד שהחוק מכיר בו.</h2>
+  <!-- ============== FEATURES ============== -->
+  <section class="features">
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <h3>תיעוד מהיר</h3>
+        <p>פנייה שקיבלת הופכת לתיק משפטי בכמה שניות</p>
+      </div>
+      <div class="feat-card reveal d1">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L15 8l6 1-4.5 4.5 1 6L12 17l-5.5 2.5 1-6L3 9l6-1z"/>
+          </svg>
+        </div>
+        <h3>נוסח חוקי</h3>
+        <p>מכתב לפי חוק הגנת הפרטיות, מוכן לשליחה</p>
+      </div>
+      <div class="feat-card reveal d2">
+        <div class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 14"/>
+          </svg>
+        </div>
+        <h3>מעקב של 30 יום</h3>
+        <p>תזכורת + כפתור תלונה אחרי שחלף הזמן החוקי</p>
+      </div>
+    </div>
+  </section>
 
-      <div class="how-stage reveal d1">
-        <p><span class="run-in">לתעד.</span> פנייה שקיבלת — מי התקשר, מתי, באיזה ערוץ, ומה הם ידעו עליך. סימון קצר, בלי להעלות פרטים רגישים.</p>
-        <div class="evidence">
-          <span class="ev-label">דוגמה</span>
-          <div class="ev-line"><span class="k">תאריך</span><span>3.11.2026</span></div>
-          <div class="ev-line"><span class="k">ערוץ</span><span>שיחה · מספר 073-XXXXXXX</span></div>
-          <div class="ev-line"><span class="k">ידעו</span><span>שם מלא, שכונה</span></div>
+  <!-- ============== MISSION ============== -->
+  <section class="mission">
+    <div class="mission-card reveal">
+      <div class="top-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/>
+        </svg>
+      </div>
+      <span class="badge">המשימה</span>
+      <h2>להחזיר <em>לך</em> את השליטה<br/>על הפרטים שלך.</h2>
+      <p>ביום הבחירות התקשרו 11 מתנדבים ממפלגות — ידעו את השם שלך, את השכונה, לפעמים גם את גיל הילדים. לא נתת לאף אחד את הפרטים. הם הגיעו ממאגרי מידע שאף פעם לא הסכמת שיאספו.</p>
+      <p>חוק הגנת הפרטיות התשמ"א־1981 נותן לך זכות לבקש הסבר, להפסיק פניות, ולדרוש מחיקה. הבעיה היא שלכל גוף פרוצדורה אחרת, וזה לוקח שבועות. מספרי עושה את העבודה בחמש דקות.</p>
+
+      <div class="stats">
+        <div class="stat"><span>תאריך השקה:</span><strong>נובמבר 2026</strong></div>
+        <div class="stat"><span>רשימת היעדים:</span><strong>50+ גופים ישראליים ובינלאומיים</strong></div>
+        <div class="stat"><span>נבנה עבור:</span><strong>כל אחד שהגיע לקצה הסבלנות</strong></div>
+      </div>
+
+      <div class="signature">
+        <div class="avatar"></div>
+        <div>
+          <div class="s-name">מרינה רודינסקי</div>
+          <div class="s-title">מייסדת מספרי · "משווה ומעלה"</div>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="how-stage reveal d2">
-        <p><span class="run-in">לזהות.</span> מתוך רשימה של חמישים וקצת גופים — מפלגות, בנקים, חברות ביטוח, סלולר, רשתות, לידים, מתווכי מידע בינלאומיים — הכלי מציע מי פנה. אם לא ברור, את בוחרת ידנית.</p>
+  <!-- ============== HOW IT WORKS ============== -->
+  <section class="how" id="how">
+    <span class="eyebrow">איך זה עובד</span>
+    <h2>שלושים יום,<br/>מכתב אחד <em>שעובד</em>.</h2>
+    <div class="steps">
+      <div class="step-card reveal">
+        <div class="step-num">01 · תיעוד</div>
+        <h4>תעדי פנייה</h4>
+        <p>מי התקשר, מתי, ומה הם ידעו עלייך.</p>
       </div>
-
-      <div class="how-stage reveal d3">
-        <p><span class="run-in">לנסח.</span> הכלי מכין מכתב לפי סעיף החוק המתאים: סעיף 13 לבירור מקור, 17ו להפסקת דיוור, 14 למחיקה. לגופים בחו"ל — נוסח GDPR באנגלית. כל הנוסחים ניתנים לעריכה לפני שליחה.</p>
+      <div class="step-card reveal d1">
+        <div class="step-num">02 · זיהוי</div>
+        <h4>זהה את הגוף</h4>
+        <p>בנק, ביטוח, מפלגה, מתווך לידים — הצעה אוטומטית.</p>
       </div>
-
-      <div class="how-stage reveal d4">
-        <p><span class="run-in">לעקוב.</span> כל תיק נפתח עם היסטוריה. אחרי 30 יום של שתיקה — החוק מחייב מענה — הכלי מתריע וכפתור אחד מכין תלונה לרשות להגנת הפרטיות.</p>
+      <div class="step-card reveal d2">
+        <div class="step-num">03 · נוסח</div>
+        <h4>הכיני מכתב</h4>
+        <p>לפי סעיף 13, 14 או 17ו — או GDPR לחו"ל.</p>
+      </div>
+      <div class="step-card reveal d3">
+        <div class="step-num">04 · מעקב</div>
+        <h4>עקבי 30 יום</h4>
+        <p>לא ענו? כפתור אחד לתלונה לרשות להגנת הפרטיות.</p>
       </div>
     </div>
   </section>
 
-  <!-- 3. FEATURES — printed menu -->
-  <section class="features" id="features">
-    <h2 class="features-head">מה יש בפנים</h2>
-    <div class="menu-sheet reveal">
-      <div class="menu-sheet-head">
-        הכלי
-        <small>מאי 2026 · גרסה 0.1</small>
-      </div>
-
-      <div class="m-group">
-        <h3>גופים ישראליים</h3>
-        <div class="m-row"><span class="m-name">מפלגות ומטות בחירות</span><span class="m-leader"></span><span class="m-count">12</span></div>
-        <div class="m-row"><span class="m-name">בנקים</span><span class="m-leader"></span><span class="m-count">5</span></div>
-        <div class="m-row"><span class="m-name">חברות ביטוח</span><span class="m-leader"></span><span class="m-count">5</span></div>
-        <div class="m-row"><span class="m-name">חברות סלולר ותקשורת</span><span class="m-leader"></span><span class="m-count">7</span></div>
-        <div class="m-row"><span class="m-name">רשתות קמעונאות ומועדוני לקוחות</span><span class="m-leader"></span><span class="m-count">5</span></div>
-        <div class="m-row"><span class="m-name">מתווכי לידים ישראליים</span><span class="m-leader"></span><span class="m-count">3</span></div>
-        <div class="m-row"><span class="m-name">גופים שחוו דליפת מידע</span><span class="m-leader"></span><span class="m-count">2</span></div>
-      </div>
-
-      <div class="m-group">
-        <h3>גופים בינלאומיים</h3>
-        <div class="m-row"><span class="m-name">מתווכי מידע (Acxiom, Experian…)</span><span class="m-leader"></span><span class="m-count">15</span></div>
-      </div>
-
-      <div class="m-group">
-        <h3>פעולות</h3>
-        <div class="m-row"><span class="m-name">סריקת מספרים לפי דפוסי VoIP</span><span class="m-leader"></span><span class="m-count">כלול</span></div>
-        <div class="m-row"><span class="m-name">שליחה המונית לקטגוריה שלמה</span><span class="m-leader"></span><span class="m-count">כלול</span></div>
-        <div class="m-row"><span class="m-name">ייצוא לרשימת חסימה (CSV)</span><span class="m-leader"></span><span class="m-count">כלול</span></div>
-        <div class="m-row"><span class="m-name">תלונה אוטומטית לרשות להגנת הפרטיות</span><span class="m-leader"></span><span class="m-count">כלול</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. STATS -->
-  <section class="stats">
-    <div class="stats-inner">
-      <h2 class="stats-head reveal">במספרים</h2>
-      <div class="stat-row reveal d1">
-        <div class="stat-fig">970</div>
-        <div class="stat-desc">מתווכי מידע בינלאומיים שאוספים עלייך פרטים — לרובם לא נתת הסכמה.</div>
-      </div>
-      <div class="stat-row reveal d2">
-        <div class="stat-fig">30</div>
-        <div class="stat-desc">ימים — זמן המענה שהחוק נותן לגוף שקיבל בקשת מחיקה.</div>
-      </div>
-      <div class="stat-row reveal d3">
-        <div class="stat-fig">5</div>
-        <div class="stat-desc">סעיפי חוק הגנת הפרטיות שעליהם מתבססים נוסחי הבקשות.</div>
-      </div>
-      <div class="stat-row reveal d4">
-        <div class="stat-fig signal">0</div>
-        <div class="stat-desc">פרטים שלך שעוברים דרכנו. הכל נשמר בדפדפן שלך בלבד.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. FAQ -->
+  <!-- ============== FAQ ============== -->
   <section class="faq" id="faq">
-    <div class="faq-grid">
-      <h2 class="faq-head reveal">שאלות שאני עצמי שאלתי לפני שבניתי את זה</h2>
-      <div class="faq-body reveal d1">
-        <p class="q"><span class="question">זה חוקי?</span> <span class="answer">כן. חוק הגנת הפרטיות התשמ"א־1981 נותן לכל אדם זכות לדעת איזה מידע מוחזק עליו, לדרוש הפסקת פנייה, ולדרוש מחיקה. הנוסחים מצטטים את הסעיפים הרלוונטיים.</span></p>
-        <p class="q"><span class="question">זה עולה כסף?</span> <span class="answer">לא. קוד פתוח, רישיון MIT, ללא הרשמה. שימוש אישי, מסחרי, הסבת הקוד — הכל מותר.</span></p>
-        <p class="q"><span class="question">הפרטים שלי נשלחים למישהו?</span> <span class="answer">לא. הכל נשמר ב־localStorage של הדפדפן. אין שרת, אין מסד נתונים, אין אנליטיקס.</span></p>
-        <p class="q"><span class="question">מה אם לא עונים לי?</span> <span class="answer">החוק מחייב מענה תוך 30 יום. הכלי מתריע כשעובר הזמן ומכין בלחיצה אחת טיוטה של תלונה לרשות להגנת הפרטיות.</span></p>
-        <p class="q"><span class="question">זה מחליף עורכת דין?</span> <span class="answer">לא. למקרה פרטני או לתביעה — התייעצי עם עו"ד. הכלי מכין את התיעוד שעו"ד תזדקק לו.</span></p>
-        <p class="q"><span class="question">איך אני יכולה לעזור?</span> <span class="answer">תרמו על ה־GitHub: הוספת גופים לרשימה, אימות של אימיילים שהשתנו, תרגום לערבית או לרוסית, תיקוני נוסח משפטי.</span></p>
-      </div>
-    </div>
+    <span class="eyebrow">שאלות</span>
+    <h2>כל מה ששאלתי <em>את עצמי</em><br/>לפני שבניתי את זה.</h2>
+
+    <details class="faq-item" open>
+      <summary>זה חוקי?</summary>
+      <p class="a">כן. חוק הגנת הפרטיות התשמ"א־1981 נותן לכל אדם זכות לדעת איזה מידע מוחזק עליו (סעיף 13), לדרוש הפסקת פנייה לדיוור ישיר (סעיף 17ו), ולדרוש מחיקה (סעיף 14). הנוסחים מצטטים את הסעיפים בצורה מדויקת.</p>
+    </details>
+    <details class="faq-item">
+      <summary>זה עולה כסף?</summary>
+      <p class="a">לא. קוד פתוח, רישיון MIT, ללא הרשמה, ללא פרסומות. שימוש אישי ומסחרי, הסבה של הקוד, שינוי — הכל מותר.</p>
+    </details>
+    <details class="faq-item">
+      <summary>הפרטים שלי נשלחים למישהו?</summary>
+      <p class="a">לא. הכל נשמר ב־localStorage של הדפדפן. אין שרת, אין מסד נתונים, אין אנליטיקס. אם תמחקי את הדפדפן — הנתונים ילכו איתו.</p>
+    </details>
+    <details class="faq-item">
+      <summary>מה אם לא עונים לי?</summary>
+      <p class="a">החוק מחייב מענה תוך 30 יום. הכלי מתריע כשעובר הזמן ומכין בלחיצה אחת טיוטה של תלונה לרשות להגנת הפרטיות.</p>
+    </details>
+    <details class="faq-item">
+      <summary>זה מחליף עורכת דין?</summary>
+      <p class="a">לא. למקרה פרטני, לתביעה, או למצב מורכב — התייעצי עם עו"ד. הכלי מכין את התיעוד שעו"ד תזדקק לו.</p>
+    </details>
+    <details class="faq-item">
+      <summary>איך אני יכולה לעזור?</summary>
+      <p class="a">תרמו ב־GitHub: הוספת גופים לרשימה, אימות של אימיילים שהשתנו, תרגום לערבית או לרוסית, תיקוני נוסח משפטי. כל שינוי עובר PR.</p>
+    </details>
   </section>
 
-  <!-- 6. CTA -->
-  <section class="cta">
-    <div class="cta-inner">
-      <p class="cta-sentence reveal">הדרך הכי קצרה לעצור שיחה שלא ביקשת — היא לכתוב.</p>
-      <div class="cta-actions reveal d1">
-        <a href="app.html" class="btn btn-primary">פתחי את מספרי →</a>
-        <a href="https://github.com/" class="btn btn-ghost" target="_blank">או עייני בקוד ב־GitHub</a>
-      </div>
+  <!-- ============== BIG CTA ============== -->
+  <section class="big-cta">
+    <h2>הדרך הכי קצרה לעצור שיחה<br/>היא <em>לכתוב</em>.</h2>
+    <p class="sub">פתחי את הכלי עכשיו וקבלי את המכתב הראשון שלך בחמש דקות.</p>
+    <div class="cta-actions">
+      <a href="app.html" class="btn btn-dark">פתחי את מספרי →</a>
+      <a href="https://github.com/" target="_blank" class="btn btn-ghost">עייני בקוד</a>
     </div>
   </section>
 
 </main>
 
-<!-- =================== FOOTER =================== -->
-<footer class="site-footer">
-  <div class="footer-plate">
-    <div class="big-mark">
-      מספרי
-      <small>· MISPARI · OPEN SOURCE ·</small>
-    </div>
-  </div>
-  <div class="footer-menu">
-    <div class="top">
-      <a href="#top" class="fm-mark" aria-label="לראש הדף">
-        <svg viewBox="0 0 32 32" fill="none">
-          <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
-          <line x1="4" y1="22" x2="28" y2="10" stroke="#c4242a" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-      </a>
-      <span style="font-size: 14px; color: var(--mute-soft);">גרסה 0.1 · 2026</span>
-    </div>
-    <div class="links">
-      <a href="app.html">פתחי את הכלי</a>
-      <a href="#how">איך זה עובד</a>
-      <a href="#features">מה יש בפנים</a>
-      <a href="#faq">שאלות</a>
-      <a href="https://github.com/" target="_blank">GitHub</a>
-    </div>
-    <div>
-      <div class="sub">
-        <div>
-          <strong>בנוי כחלק מ</strong>
-          "משווה ומעלה" — פינה שבה מוצאים כלים בקוד פתוח, בודקים אותם, ומעלים רעיון משלנו.
+<!-- ============== FOOTER ============== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <span class="mark">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="4" y1="22" x2="28" y2="10" stroke="#c4242a" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="name">מספרי</span>
         </div>
-        <div>
-          <strong>רישיון</strong>
-          MIT · חופשי לשימוש, שינוי והפצה.
-        </div>
+        <p class="footer-tag">כלי קוד פתוח למחיקת המידע האישי שלך מכל חברה שאוספת אותו. נבנה בישראל, לפי חוק הגנת הפרטיות התשמ"א־1981.</p>
       </div>
-      <div class="legal">
-        <span>© 2026 · אינו ייעוץ משפטי</span>
-        <span>בנוי בישראל</span>
+      <div class="footer-col">
+        <h5>המוצר</h5>
+        <ul>
+          <li><a href="app.html">פתחי את הכלי</a></li>
+          <li><a href="#how">איך זה עובד</a></li>
+          <li><a href="#faq">שאלות נפוצות</a></li>
+        </ul>
       </div>
+      <div class="footer-col">
+        <h5>קוד פתוח</h5>
+        <ul>
+          <li><a href="https://github.com/" target="_blank">GitHub</a></li>
+          <li><a href="https://github.com/" target="_blank">תרומה לקוד</a></li>
+          <li><a href="https://github.com/" target="_blank">רישיון MIT</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 מספרי · אינו ייעוץ משפטי</span>
+      <span>בנוי בישראל · חלק מפינת <span class="serif">משווה ומעלה</span></span>
     </div>
   </div>
 </footer>
 
 <script>
+  // Open app with number prefilled
+  function openApp() {
+    const num = document.getElementById('hero-input').value.trim();
+    if (num) {
+      sessionStorage.setItem('mispari.prefill-number', num);
+    }
+    window.location.href = 'app.html';
+  }
+
+  // Reveal on scroll
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -1004,7 +946,7 @@
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 
