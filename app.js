@@ -1,219 +1,290 @@
-// mispari — open-source Hebrew tool for personal-data deletion requests
-// Copyright (c) 2026 — MIT License
+// mispari — Hebrew tool for personal-data deletion requests · MIT · 2026
 
 const STORAGE_KEY = 'mispari.v1';
 
-// --- Data store ---
 const Store = {
   load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : { profile:{}, tickets:[], reports:[] };
-    } catch (e) { return { profile:{}, tickets:[], reports:[] }; }
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : { profile:{}, tickets:[], draft:{} }; }
+    catch(e) { return { profile:{}, tickets:[], draft:{} }; }
   },
-  save(state) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { alert('לא ניתן לשמור. ייתכן שאחסון הדפדפן מלא.'); }
-  },
-  wipe() {
-    if (confirm('למחוק את כל הנתונים המקומיים? זה לא ניתן לביטול.')) {
-      localStorage.removeItem(STORAGE_KEY); location.reload();
-    }
-  },
+  save(s) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch(e) { alert('לא ניתן לשמור'); } },
+  wipe() { if (confirm('למחוק את כל הנתונים המקומיים?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
   export() {
     const data = this.load();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `mispari-backup-${Date.now()}.json`; a.click();
-    URL.revokeObjectURL(url);
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    downloadBlob(blob, `mispari-backup-${new Date().toISOString().slice(0,10)}.json`);
   }
 };
 
-// --- State ---
 let state = Store.load();
 let route = { name:'home', params:{} };
 
-// --- Helpers ---
-const $ = (sel) => document.querySelector(sel);
-const esc = (s) => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('he-IL') : '';
-const daysSince = (iso) => iso ? Math.floor((Date.now() - new Date(iso).getTime())/86400000) : 0;
+const $ = s => document.querySelector(s);
+const esc = s => String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = () => Math.random().toString(36).slice(2,9);
+const daysSince = iso => iso ? Math.floor((Date.now()-new Date(iso).getTime())/86400000) : 0;
+const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('he-IL') : '';
+const fmtDateShort = iso => iso ? new Date(iso).toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit'}) : '';
 
-function go(name, params={}) { route = { name, params }; render(); window.scrollTo(0,0); }
+function go(name, params={}) { route = {name, params}; render(); window.scrollTo(0,0); }
 function persist() { Store.save(state); render(); }
 
-// --- Status labels ---
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
 const STATUS = {
   draft:    { label:'טיוטה',           pill:'pill-draft'  },
-  ready:    { label:'מוכן לשליחה',      pill:'pill-ready'  },
-  sent:     { label:'נשלח',             pill:'pill-sent'   },
-  replied:  { label:'התקבלה תשובה',     pill:'pill-reply'  },
-  action:   { label:'נדרשת פעולה',      pill:'pill-action' },
-  confirmed:{ label:'אושרה מחיקה',      pill:'pill-done'   },
-  closed:   { label:'נסגר',             pill:'pill-closed' }
+  ready:    { label:'מוכן',            pill:'pill-ready'  },
+  sent:     { label:'נשלח',            pill:'pill-sent'   },
+  replied:  { label:'התקבלה תשובה',    pill:'pill-replied'},
+  action:   { label:'נדרשת פעולה',     pill:'pill-action' },
+  confirmed:{ label:'אושרה מחיקה',     pill:'pill-confirmed'},
+  closed:   { label:'נסגר',            pill:'pill-closed' }
 };
 
-// --- Views ---
+const greetings = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'בוקר טוב';
+  if (h < 18) return 'צהריים טובים';
+  return 'ערב טוב';
+};
+
+// =========== VIEWS ===========
+
 function view_home() {
   const tickets = state.tickets || [];
-  const active = tickets.filter(t => t.status !== 'closed');
-  const needsFollowup = active.filter(t =>
-    t.status === 'sent' && daysSince(t.events?.find(e=>e.type==='sent')?.at) >= 30);
+  const draft = tickets.filter(t => t.status === 'draft' || t.status === 'ready');
+  const sent = tickets.filter(t => t.status === 'sent');
+  const replied = tickets.filter(t => t.status === 'replied' || t.status === 'action');
+  const confirmed = tickets.filter(t => t.status === 'confirmed');
+  const needsFollowup = sent.filter(t => daysSince(t.events?.find(e=>e.type==='sent')?.at) >= 30);
+  const today = new Date().toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' });
+  const name = state.profile?.name?.split(' ')[0];
 
   return `
-    <div class="hero-card">
-      <h1>מאיפה יש לכם את המספר שלי?</h1>
-      <p>מתעד פנייה שקיבלת, מזהה מי אחראי, ומכין בקשה חוקית למחיקת המידע עליך.</p>
-      <button class="btn btn-primary btn-big" onclick="go('new-call')">
-        קיבלתי פנייה · תעד עכשיו
-      </button>
-      <div class="actions-row">
-        <button class="btn btn-secondary" onclick="go('bulk')">שלח בקשה ליותר מגוף אחד</button>
-        <button class="btn btn-secondary" onclick="go('scan')">סרוק רשימת מספרים</button>
+    <div class="greeting">
+      <h1>${greetings()}${name ? ', ' + esc(name) : ''}</h1>
+      <div class="meta">${today}</div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="label">בקשות נשלחו</div>
+        <div class="value">${sent.length + replied.length + confirmed.length}</div>
+        <div class="caption">מתחילת השימוש</div>
+      </div>
+      <div class="tile ${needsFollowup.length ? 'warning' : ''}">
+        <div class="label">ממתינות ל־30 יום</div>
+        <div class="value">${needsFollowup.length}</div>
+        <div class="caption ${needsFollowup.length ? 'warning' : ''}">${needsFollowup.length ? 'ניתן להגיש תלונה' : 'הכל בזמן'}</div>
+      </div>
+      <div class="tile">
+        <div class="label">התקבלו תשובות</div>
+        <div class="value">${replied.length}</div>
+        <div class="caption">מתוך ${sent.length + replied.length + confirmed.length}</div>
+      </div>
+      <div class="tile signal">
+        <div class="label">אושרו מחיקות</div>
+        <div class="value">${confirmed.length}</div>
+        <div class="caption">${confirmed.length ? 'הצלחות' : 'עדיין אין'}</div>
       </div>
     </div>
 
     ${needsFollowup.length ? `
-      <div class="warn-note">
-        <strong>${needsFollowup.length} תיקים ממתינים ל־30 יום.</strong> החוק קובע 30 יום למענה — אפשר לשלוח תזכורת או להגיש תלונה לרשות.
+      <div class="signal-bar">
+        <div class="sb-text"><strong>${needsFollowup.length} בקשות חצו 30 יום.</strong> לפי החוק, הגוף מחויב להגיב בפרק זמן זה — אפשר להגיש תלונה לרשות להגנת הפרטיות.</div>
       </div>` : ''}
 
-    <div class="tickets-head">
-      <h2>התיקים שלי</h2>
-      <span class="count">${active.length} פעילים · ${tickets.length - active.length} סגורים</span>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          פעולה דחופה
+          <span class="count-chip">${needsFollowup.length + replied.length}</span>
+        </div>
+      </div>
+      ${(needsFollowup.concat(replied)).length === 0 ?
+        '<div class="empty">אין בקשות שממתינות לפעולה.</div>' :
+        `<div class="rows">${needsFollowup.concat(replied).slice(0,5).map(renderRow).join('')}</div>`
+      }
     </div>
 
-    ${active.length === 0 ? `
-      <div class="ticket-empty">
-        עדיין אין תיקים. התחילי בלתעד פנייה שקיבלת, או בסריקה של המספרים שהתקשרו אלייך.
-      </div>` :
-      active.map(t => renderTicketRow(t)).join('')
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          נשלחו, ממתינות לתשובה
+          <span class="count-chip">${sent.length - needsFollowup.length}</span>
+        </div>
+      </div>
+      ${(sent.length - needsFollowup.length) === 0 ?
+        '<div class="empty">אין בקשות פתוחות.</div>' :
+        `<div class="rows">${sent.filter(t=>!needsFollowup.includes(t)).slice(0,5).map(renderRow).join('')}</div>`
+      }
+    </div>
+
+    ${draft.length ? `
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            טיוטות
+            <span class="count-chip">${draft.length}</span>
+          </div>
+        </div>
+        <div class="rows">${draft.map(renderRow).join('')}</div>
+      </div>` : ''}
+
+    ${tickets.length === 0 ? `
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">התחלה</div></div>
+        <div style="font-size:14px; color:var(--muted); margin-bottom:16px;">
+          התחילי בלתעד פנייה שקיבלת. הכלי יזהה את הגוף, יכין בקשת מחיקה חוקית, ויעקוב אחרי התשובות.
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="go('new-call')">תעוד פנייה חדשה</button>
+      </div>` : ''
     }
 
     ${!state.profile.name ? `
-      <div class="card" style="margin-top:28px;">
-        <h3>הוסיפי את פרטייך פעם אחת</h3>
-        <p style="color:var(--ink-soft); font-size:14px; margin-bottom:12px;">
-          פרטייך נשמרים רק במכשיר שלך, לצורך הכנת הבקשות. לא נשלחים לשום שרת.
-        </p>
-        <button class="btn btn-secondary" onclick="go('profile')">הגדרת פרטים</button>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">הפרטים שלך</div></div>
+        <div style="font-size:14px; color:var(--muted); margin-bottom:16px;">
+          הפרטים משמשים להכנת הבקשות בשמך. נשמרים רק במכשיר הזה, לא נשלחים לשום שרת.
+        </div>
+        <button class="btn btn-secondary" onclick="go('profile')">הגדר פרטים</button>
       </div>` : ''
     }
+
+    <footer class="app-footer">
+      קוד פתוח · MIT · <a href="https://github.com/" target="_blank">GitHub</a> · כל הנתונים נשמרים במכשיר שלך
+    </footer>
   `;
 }
 
-function renderTicketRow(t) {
-  const entity = window.ENTITIES.find(e => e.id === t.entityId) || { name:t.entityName };
+function renderRow(t) {
+  const entity = window.ENTITIES.find(e => e.id === t.entityId) || { name: t.entityName };
   const status = STATUS[t.status] || STATUS.draft;
-  const lastEvent = (t.events||[])[t.events?.length-1];
-  const since = lastEvent ? daysSince(lastEvent.at) : null;
+  const sentEvt = (t.events||[]).find(e => e.type==='sent');
+  const days = sentEvt ? daysSince(sentEvt.at) : null;
+  const warnDays = days !== null && days >= 30;
   return `
-    <div class="card card-row" onclick="go('ticket', { id: '${t.id}' })">
-      <div style="flex:1;">
-        <div style="font-weight:600;">${esc(entity.name)}</div>
-        <div class="ticket-meta">
-          <span>${esc(t.goalLabel || 'בקשה')}</span>
-          ${since !== null ? `<span>· לפני ${since} ימים</span>` : ''}
-        </div>
+    <div class="row" onclick="go('ticket', { id: '${t.id}' })">
+      <div class="r-primary">
+        <div class="r-name">${esc(entity.name)}</div>
+        <div class="r-sub">${esc(t.goalLabel || 'בקשה')}</div>
       </div>
-      <span class="pill ${status.pill}">${status.label}</span>
+      <div class="r-meta">
+        ${days !== null ? `<span class="days ${warnDays ? 'warn' : ''}">${days} ימים</span>` : ''}
+        <span class="pill ${status.pill}">${status.label}</span>
+      </div>
     </div>
   `;
 }
 
-// --- New call flow ---
+// === Step indicator ===
+function steps(active) {
+  const list = ['תיעוד','זיהוי','מטרה','שליחה'];
+  return `<div class="steps">${list.map((s,i) => `
+    <span class="step ${i === active ? 'active' : ''}"><span class="n">${i+1}</span>${s}</span>
+  `).join('')}</div>`;
+}
+
+// === New call ===
 function view_newCall() {
   const d = state.draft || {};
   return `
-    <div class="breadcrumb" onclick="go('home')">← חזרה</div>
-    <div class="steps"><div class="step active"></div><div class="step"></div><div class="step"></div><div class="step"></div></div>
-    <h2>תיעוד הפנייה</h2>
-    <p class="lede">כמה פרטים כדי להבין מה קרה.</p>
+    <div class="section-head">
+      <div class="back" onclick="go('home')">← חזרה</div>
+      <h2>תיעוד פנייה שקיבלת</h2>
+      <div class="lede">כמה פרטים כדי להבין מי פנה, מתי, ומה היה ברשותם.</div>
+    </div>
+    ${steps(0)}
 
-    <div class="card">
-      <div class="field">
-        <label>מתי פנו אליך?</label>
-        <input type="date" id="f-date" value="${d.callDate || new Date().toISOString().slice(0,10)}" />
-      </div>
-      <div class="field">
-        <label>איך פנו?</label>
-        <div class="chips" id="chips-channel">
-          ${['שיחה','SMS','וואטסאפ','אימייל','אחר'].map(c => `
-            <div class="chip ${d.callChannel===c?'active':''}" data-chip="channel" data-val="${c}">${c}</div>
-          `).join('')}
+    <div class="panel">
+      <div class="fieldset">
+        <div class="field">
+          <label>מתי פנו אליך</label>
+          <input type="date" id="f-date" value="${d.callDate || new Date().toISOString().slice(0,10)}" />
         </div>
-      </div>
-      <div class="field">
-        <label>מספר הטלפון / מזהה השולח (אם ידוע)</label>
-        <input type="text" id="f-number" value="${esc(d.number||'')}" placeholder="למשל 072-1234567" />
-      </div>
-      <div class="field">
-        <label>מה הם ידעו עלייך? <span style="font-weight:400;color:var(--ink-mute);">(סמני; אין צורך להזין את הפרט עצמו)</span></label>
-        <div class="chips" id="chips-known">
-          ${['שם מלא','כתובת','גיל','פרטי משפחה','תחום עניין','היסטוריית שימוש','נתוני אשראי','אחר'].map(c => `
-            <div class="chip ${(d.known||[]).includes(c)?'active':''}" data-chip="known-multi" data-val="${c}">${c}</div>
-          `).join('')}
+        <div class="field">
+          <label>איך פנו</label>
+          <div class="chips" id="chips-channel">
+            ${['שיחה','SMS','וואטסאפ','אימייל','אחר'].map(c => `
+              <div class="chip ${d.callChannel===c?'active':''}" data-chip="channel" data-val="${c}">${c}</div>
+            `).join('')}
+          </div>
         </div>
-      </div>
-      <div class="field">
-        <label>תוכן הפנייה / מה אמרו (לא חובה)</label>
-        <textarea id="f-content" placeholder="הצעה לביטוח, קמפיין בחירות, הצעת הלוואה...">${esc(d.content||'')}</textarea>
+        <div class="field">
+          <label>מספר השולח</label>
+          <input type="text" id="f-number" value="${esc(d.number||'')}" placeholder="072-1234567" class="mono" />
+          <div class="hint">אם זה מספר VoIP עסקי (072, 073, 077), ציינו זאת</div>
+        </div>
+        <div class="field">
+          <label>מה הפונה ידע עליך</label>
+          <div class="chips" id="chips-known">
+            ${['שם מלא','כתובת','גיל','פרטי משפחה','תחום עניין','היסטוריית שימוש','נתוני אשראי','אחר'].map(c => `
+              <div class="chip ${(d.known||[]).includes(c)?'active':''}" data-chip="known-multi" data-val="${c}">${c}</div>
+            `).join('')}
+          </div>
+          <div class="hint">סמני רק מה היה בידיהם — אין צורך להזין את הפרט עצמו</div>
+        </div>
+        <div class="field">
+          <label>תוכן הפנייה <span style="color:var(--muted);font-weight:400;">· לא חובה</span></label>
+          <textarea id="f-content" placeholder="הצעה לביטוח, קמפיין בחירות, הצעת הלוואה...">${esc(d.content||'')}</textarea>
+        </div>
       </div>
     </div>
 
-    <div class="actions-row">
+    <div class="actions-row" style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="saveDraftAndNext()">המשך לזיהוי הגוף</button>
       <button class="btn btn-ghost" onclick="go('home')">ביטול</button>
-      <button class="btn btn-primary" onclick="saveDraftAndNext()">המשך לזיהוי הגוף ←</button>
     </div>
   `;
 }
 
-// --- Identify entity ---
+// === Identify ===
 function view_identify() {
   const d = state.draft || {};
-  // Suggest matches from content/number
   const suggestions = suggestEntities(d);
   const byCat = groupBy(window.ENTITIES, 'category');
 
   return `
-    <div class="breadcrumb" onclick="go('new-call')">← חזרה לתיעוד</div>
-    <div class="steps"><div class="step active"></div><div class="step active"></div><div class="step"></div><div class="step"></div></div>
-    <h2>מי פנה אלייך?</h2>
-    <p class="lede">בחרי את הגוף. אם לא ברור — דלגי לרשימה המלאה בהמשך.</p>
+    <div class="section-head">
+      <div class="back" onclick="go('new-call')">← חזרה לתיעוד</div>
+      <h2>מי פנה אלייך?</h2>
+      <div class="lede">בחרי את הגוף מהרשימה. אם לא ברור — בחרי "לא מזוהה".</div>
+    </div>
+    ${steps(1)}
 
     ${suggestions.length ? `
-      <div class="card">
-        <h3>הצעות לפי התוכן</h3>
-        <div class="check-list" style="margin-top:10px;">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">הצעות לפי התוכן</div></div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
           ${suggestions.map(e => `
-            <div class="check-item ${d.entityId===e.id?'active':''}" onclick="pickEntity('${e.id}')">
-              <div style="flex:1;">
-                <div class="ci-title">${esc(e.name)}</div>
-                <div class="ci-sub">${window.CATEGORIES[e.category]?.label || ''} · ${e.email || 'ללא אימייל'}</div>
-              </div>
+            <div class="entity-item ${d.entityId===e.id?'selected':''}" onclick="pickEntity('${e.id}')">
+              <div><div class="ei-name">${esc(e.name)}</div></div>
+              <div class="ei-email">${esc(e.email || '—')}</div>
             </div>
           `).join('')}
         </div>
       </div>` : ''
     }
 
-    <div class="card">
-      <h3>כל הגופים (${window.ENTITIES.length})</h3>
-      <input type="text" id="entity-search" placeholder="חיפוש לפי שם..." oninput="filterEntities(this.value)" style="margin:10px 0;" />
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">כל הגופים <span class="count-chip">${window.ENTITIES.length}</span></div>
+      </div>
+      <input type="text" id="entity-search" placeholder="חיפוש..." oninput="filterEntities(this.value)" style="margin-bottom:8px;" />
       <div id="entity-list">
         ${Object.entries(byCat).map(([cat, items]) => `
-          <div style="margin-top:14px;">
-            <div style="font-size:12px; color:var(--ink-mute); font-weight:500; margin-bottom:6px;">
-              ${window.CATEGORIES[cat]?.label || cat}
-            </div>
+          <div class="entity-group" data-cat="${cat}">
+            <div class="entity-group-label">${window.CATEGORIES[cat]?.label || cat}</div>
             ${items.map(e => `
-              <div class="check-item ${d.entityId===e.id?'active':''}" data-entity-name="${esc(e.name)}" onclick="pickEntity('${e.id}')">
-                <div style="flex:1;">
-                  <div class="ci-title">${esc(e.name)} ${e.leaked ? '<span class="pill pill-action" style="margin-right:6px;">דלף</span>' : ''}</div>
-                  <div class="ci-sub">${e.email || 'ללא אימייל ציבורי'}</div>
+              <div class="entity-item ${d.entityId===e.id?'selected':''}" data-entity-name="${esc(e.name)}" onclick="pickEntity('${e.id}')">
+                <div>
+                  <div class="ei-name">${esc(e.name)} ${e.leaked ? '<span class="pill pill-action" style="margin-right:6px;">דלף</span>' : ''}</div>
                 </div>
+                <div class="ei-email">${esc(e.email || '—')}</div>
               </div>
             `).join('')}
           </div>
@@ -221,14 +292,14 @@ function view_identify() {
       </div>
     </div>
 
-    <div class="actions-row">
+    <div class="actions-row" style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="${d.entityId ? "go('goals')" : 'alert(\\\"בחרי גוף קודם\\\")'}">המשך</button>
       <button class="btn btn-ghost" onclick="go('new-call')">חזרה</button>
-      <button class="btn btn-primary" onclick="${d.entityId ? "go('goals')" : 'alert(\\\"בחרי גוף קודם\\\")'}">המשך ←</button>
     </div>
   `;
 }
 
-// --- Goals ---
+// === Goals ===
 function view_goals() {
   const d = state.draft || {};
   const entity = window.ENTITIES.find(e => e.id === d.entityId);
@@ -241,34 +312,39 @@ function view_goals() {
   ];
 
   return `
-    <div class="breadcrumb" onclick="go('identify')">← חזרה</div>
-    <div class="steps"><div class="step active"></div><div class="step active"></div><div class="step active"></div><div class="step"></div></div>
-    <h2>מה את רוצה שיקרה?</h2>
-    <p class="lede">אפשר לבחור יותר מאחד — כל בקשה תישלח בנפרד.</p>
+    <div class="section-head">
+      <div class="back" onclick="go('identify')">← חזרה</div>
+      <h2>מה את רוצה מ־${esc(entity.name)}?</h2>
+      <div class="lede">כל מטרה היא מכתב נפרד. אפשר לבחור יותר מאחת.</div>
+    </div>
+    ${steps(2)}
 
-    <div class="check-list">
-      ${goals.map(g => `
-        <div class="check-item ${(d.goals||[]).includes(g.key)?'active':''}" onclick="toggleGoal('${g.key}')">
-          <div style="flex:1;">
-            <div class="ci-title">${g.title}</div>
-            <div class="ci-sub">${g.desc} · ${g.legal_basis}</div>
+    <div class="panel">
+      <div class="choice-list">
+        ${goals.map(g => `
+          <div class="choice ${(d.goals||[]).includes(g.key)?'active':''}" onclick="toggleGoal('${g.key}')">
+            <div class="ci-check"></div>
+            <div class="ci-body">
+              <div class="ci-title">${g.title}</div>
+              <div class="ci-sub">${g.desc} · ${g.legal_basis}</div>
+            </div>
           </div>
-        </div>
-      `).join('')}
+        `).join('')}
+      </div>
     </div>
 
-    <div class="legal-note">
-      <strong>הבהרה משפטית:</strong> הנוסחים מבוססים על חוק הגנת הפרטיות (ישראל) ועל GDPR (האיחוד האירופי), אך אינם ייעוץ משפטי. למקרים מורכבים התייעצי עם עו"ד.
+    <div style="padding: 12px 16px; background: var(--warning-bg); border-radius: 6px; font-size: 12px; color: var(--warning); margin-top: 16px;">
+      הנוסחים מבוססים על חוק הגנת הפרטיות התשמ"א־1981 ועל GDPR. אינם ייעוץ משפטי.
     </div>
 
-    <div class="actions-row">
+    <div class="actions-row" style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="${(d.goals||[]).length ? "go('review')" : 'alert(\\\"בחרי לפחות מטרה אחת\\\")'}">הכנת המכתב</button>
       <button class="btn btn-ghost" onclick="go('identify')">חזרה</button>
-      <button class="btn btn-primary" onclick="${(d.goals||[]).length ? "go('review')" : 'alert(\\\"בחרי לפחות מטרה אחת\\\")'}">הכנת המכתב ←</button>
     </div>
   `;
 }
 
-// --- Review & send ---
+// === Review (the letter) ===
 function view_review() {
   const d = state.draft || {};
   const entity = window.ENTITIES.find(e => e.id === d.entityId);
@@ -276,11 +352,13 @@ function view_review() {
 
   if (!p.name) {
     return `
-      <div class="breadcrumb" onclick="go('goals')">← חזרה</div>
-      <div class="card">
-        <h2>רק רגע — נדרשים הפרטים שלך</h2>
-        <p style="color:var(--ink-soft);">הבקשה צריכה לכלול את השם שלך, כי בלעדיו הגוף לא יזהה את הרשומה.</p>
-        <button class="btn btn-primary" style="margin-top:14px;" onclick="go('profile', { returnTo: 'review' })">הוסיפי פרטים</button>
+      <div class="section-head">
+        <div class="back" onclick="go('goals')">← חזרה</div>
+        <h2>נדרש להוסיף את השם שלך</h2>
+        <div class="lede">הבקשה צריכה לכלול את שמך, אחרת הגוף לא יזהה את הרשומה.</div>
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-primary" onclick="go('profile', { returnTo: 'review' })">הוסיפי פרטים</button>
       </div>
     `;
   }
@@ -288,8 +366,7 @@ function view_review() {
   const goalKey = (d.goals||[])[0];
   const tpl = window.TEMPLATES[goalKey];
   const payload = {
-    userName: p.name,
-    userId: p.id,
+    userName: p.name, userId: p.id,
     entityName: entity?.name || '',
     callDate: d.callDate ? fmtDate(d.callDate) : '',
     callChannel: d.callChannel || '',
@@ -298,187 +375,141 @@ function view_review() {
   };
 
   return `
-    <div class="breadcrumb" onclick="go('goals')">← חזרה</div>
-    <div class="steps"><div class="step active"></div><div class="step active"></div><div class="step active"></div><div class="step active"></div></div>
-    <h2>בדיקה לפני שליחה</h2>
-    <p class="lede">כך יראה המכתב. אפשר לערוך לפני שליחה.</p>
+    <div class="section-head">
+      <div class="back" onclick="go('goals')">← חזרה</div>
+      <h2>${esc(tpl.title)}</h2>
+      <div class="lede">זה המכתב שיישלח. ניתן לערוך לפני שליחה.</div>
+    </div>
+    ${steps(3)}
 
-    <div class="card">
-      <div style="font-size:13px; color:var(--ink-mute); margin-bottom:6px;">נמען</div>
-      <div style="font-weight:500;">${esc(entity?.name)} · ${esc(entity?.email || 'ללא אימייל — פתחי טופס באתר')}</div>
+    <div class="letter-meta">
+      <div class="letter-meta-row">
+        <div class="k">אל</div>
+        <div class="v">${esc(entity?.name)} <span class="mono" style="color:var(--muted);">${esc(entity?.email || 'אין אימייל ציבורי')}</span></div>
+      </div>
+      <div class="letter-meta-row">
+        <div class="k">נושא</div>
+        <div class="v">${esc(tpl.subject(payload))}</div>
+      </div>
+      <div class="letter-meta-row">
+        <div class="k">הבסיס</div>
+        <div class="v" style="font-weight:400; color:var(--muted);">${esc(tpl.legal_basis)}</div>
+      </div>
     </div>
 
-    <div class="card">
-      <div style="font-size:13px; color:var(--ink-mute); margin-bottom:6px;">נושא</div>
-      <div style="font-weight:500; margin-bottom:14px;">${esc(tpl.subject(payload))}</div>
-      <div style="font-size:13px; color:var(--ink-mute); margin-bottom:6px;">תוכן</div>
-      <div class="letter" contenteditable="true" id="letter-body">${esc(tpl.body(payload))}</div>
-    </div>
+    <div class="letter-sheet" contenteditable="true" id="letter-body">${esc(tpl.body(payload))}</div>
 
-    <div class="legal-note">
-      <strong>${tpl.title}</strong> — ${tpl.legal_basis}
-    </div>
-
-    <div class="actions-row">
+    <div class="actions-row" style="margin-top:24px;">
+      ${entity?.email ? `<button class="btn btn-primary" onclick="sendLetter()">פתח בתוכנת הדואר</button>` : ''}
       <button class="btn btn-secondary" onclick="copyLetter()">העתק טקסט</button>
-      ${entity?.email ? `<button class="btn btn-primary" onclick="sendLetter()">פתח במייל ✉</button>` : ''}
-      <button class="btn btn-secondary" onclick="markAsSent()">סימון כנשלח ידנית</button>
-    </div>
-    <div class="actions-row" style="margin-top:8px;">
-      <button class="btn btn-ghost" onclick="downloadLetter()">הורד כקובץ טקסט</button>
+      <button class="btn btn-secondary" onclick="downloadLetter()">הורד קובץ</button>
+      <button class="btn btn-ghost" onclick="markAsSent()">סימון כנשלח ידנית</button>
     </div>
   `;
 }
 
-// --- Bulk mode ---
-function view_bulk() {
-  const byCat = groupBy(window.ENTITIES, 'category');
-  return `
-    <div class="breadcrumb" onclick="go('home')">← חזרה</div>
-    <h2>שליחה לכמה גופים בבת אחת</h2>
-    <p class="lede">סמני את הגופים שתרצי לשלוח להם בקשת מחיקה. הכלי יכין מכתב לכל אחד.</p>
-
-    <div class="card">
-      <h3>בחרי קטגוריות</h3>
-      <div class="chips" style="margin-top:10px;">
-        ${Object.entries(window.CATEGORIES).map(([cat, meta]) => `
-          <div class="chip" data-chip="bulk-cat" data-val="${cat}" onclick="bulkSelectCat('${cat}')">
-            ${meta.label} <span style="opacity:0.7;">(${byCat[cat]?.length || 0})</span>
-          </div>
-        `).join('')}
-      </div>
-      <div style="margin-top:14px; display:flex; gap:10px;">
-        <button class="btn btn-secondary" onclick="bulkSelectAll()">בחרי הכל</button>
-        <button class="btn btn-ghost" onclick="bulkClear()">נקי</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>או סמני ידנית</h3>
-      <div id="bulk-list" class="check-list" style="margin-top:12px;">
-        ${window.ENTITIES.map(e => `
-          <div class="check-item" data-bulk-id="${e.id}" onclick="bulkToggle('${e.id}')">
-            <div style="flex:1;">
-              <div class="ci-title">${esc(e.name)}</div>
-              <div class="ci-sub">${window.CATEGORIES[e.category]?.label} · ${e.email || 'ללא אימייל'}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <div class="actions-row">
-      <button class="btn btn-ghost" onclick="go('home')">ביטול</button>
-      <button class="btn btn-primary" onclick="bulkProceed()">
-        <span id="bulk-count">0</span> גופים · הכנת מכתבים ←
-      </button>
-    </div>
-  `;
-}
-
-// --- Scan numbers ---
-function view_scan() {
-  return `
-    <div class="breadcrumb" onclick="go('home')">← חזרה</div>
-    <h2>סריקת מספרים שהתקשרו</h2>
-    <p class="lede">הדביקי כאן מספרים (אחד בשורה) ונזהה ספאמרים ידועים ודפוסים חשודים.</p>
-
-    <div class="card">
-      <div class="field">
-        <textarea id="scan-input" rows="8" placeholder="072-1234567&#10;077-9876543&#10;+972-3-1234567"></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="runScan()">סרוק →</button>
-    </div>
-
-    <div id="scan-results"></div>
-  `;
-}
-
-// --- Profile ---
+// === Profile ===
 function view_profile() {
   const p = state.profile || {};
   const returnTo = route.params.returnTo || 'home';
   return `
-    <div class="breadcrumb" onclick="go('${returnTo}')">← חזרה</div>
-    <h2>הפרטים שלך</h2>
-    <p class="lede">נשמרים רק במכשיר שלך. משמשים להכנת הבקשות בשמך.</p>
-
-    <div class="card">
-      <div class="field">
-        <label>שם מלא</label>
-        <input id="p-name" value="${esc(p.name||'')}" placeholder="שם ושם משפחה" />
-      </div>
-      <div class="field">
-        <label>תעודת זהות (לא חובה)</label>
-        <input id="p-id" value="${esc(p.id||'')}" placeholder="9 ספרות" />
-        <div class="hint">כמה גופים דורשים ת.ז. לאימות הזהות לפני מחיקה. אם לא תמלאי, ייתכן שתידרשי להשלים בהמשך.</div>
-      </div>
-      <div class="field">
-        <label>אימייל ליצירת קשר (לא חובה)</label>
-        <input id="p-email" type="email" value="${esc(p.email||'')}" placeholder="name@example.com" />
-      </div>
-      <div class="field">
-        <label>מספר טלפון (לא חובה)</label>
-        <input id="p-phone" value="${esc(p.phone||'')}" placeholder="050-0000000" />
-      </div>
-      <button class="btn btn-primary" onclick="saveProfile('${returnTo}')">שמירה</button>
+    <div class="section-head">
+      <div class="back" onclick="go('${returnTo}')">← חזרה</div>
+      <h2>הפרטים שלך</h2>
+      <div class="lede">נשמרים רק במכשיר הזה. משמשים להכנת הבקשות בשמך.</div>
     </div>
 
-    <div class="card" style="margin-top:20px;">
-      <h3>נתונים שמורים</h3>
-      <p style="color:var(--ink-soft); font-size:14px; margin-bottom:12px;">
-        ${state.tickets?.length || 0} תיקים נשמרים אצלך בדפדפן.
-      </p>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-secondary" onclick="Store.export()">הורד גיבוי (JSON)</button>
+    <div class="panel">
+      <div class="fieldset">
+        <div class="field">
+          <label>שם מלא</label>
+          <input id="p-name" value="${esc(p.name||'')}" placeholder="שם ושם משפחה" />
+        </div>
+        <div class="field">
+          <label>תעודת זהות <span style="color:var(--muted);font-weight:400;">· לא חובה</span></label>
+          <input id="p-id" value="${esc(p.id||'')}" placeholder="9 ספרות" class="mono" />
+          <div class="hint">חלק מהגופים דורשים ת.ז. לאימות הזהות לפני מחיקה</div>
+        </div>
+        <div class="field">
+          <label>אימייל</label>
+          <input id="p-email" type="email" value="${esc(p.email||'')}" placeholder="name@example.com" class="mono" />
+        </div>
+        <div class="field">
+          <label>טלפון</label>
+          <input id="p-phone" value="${esc(p.phone||'')}" placeholder="050-0000000" class="mono" />
+        </div>
+      </div>
+      <div class="actions-row" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="saveProfile('${returnTo}')">שמור</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">נתונים שמורים</div></div>
+      <div style="font-size:14px; color:var(--muted); margin-bottom:16px;">
+        ${state.tickets?.length || 0} תיקים שמורים בדפדפן.
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-secondary" onclick="Store.export()">הורד גיבוי</button>
         <button class="btn btn-danger" onclick="Store.wipe()">מחק הכל</button>
       </div>
     </div>
   `;
 }
 
-// --- Ticket view ---
+// === Ticket ===
 function view_ticket() {
   const t = state.tickets.find(x => x.id === route.params.id);
-  if (!t) return `<div class="card">תיק לא נמצא. <button class="btn btn-ghost" onclick="go('home')">חזרה</button></div>`;
+  if (!t) return `<div class="panel">תיק לא נמצא. <button class="btn btn-ghost" onclick="go('home')">חזרה</button></div>`;
   const entity = window.ENTITIES.find(e => e.id === t.entityId);
   const status = STATUS[t.status] || STATUS.draft;
   const sentEvt = (t.events||[]).find(e => e.type==='sent');
-  const since = sentEvt ? daysSince(sentEvt.at) : 0;
-  const canComplain = t.status === 'sent' && since >= 30;
+  const days = sentEvt ? daysSince(sentEvt.at) : 0;
+  const canComplain = t.status === 'sent' && days >= 30;
 
   return `
-    <div class="breadcrumb" onclick="go('home')">← כל התיקים</div>
-    <h2>${esc(entity?.name || t.entityName)}</h2>
-    <p class="lede">
-      <span class="pill ${status.pill}">${status.label}</span>
-      ${sentEvt ? ` · נשלח לפני ${since} ימים` : ''}
-    </p>
+    <div class="section-head">
+      <div class="back" onclick="go('home')">← כל התיקים</div>
+      <h2>${esc(entity?.name || t.entityName)}</h2>
+      <div class="lede">
+        <span class="pill ${status.pill}">${status.label}</span>
+        ${sentEvt ? ` · נשלח לפני <span class="mono">${days}</span> ימים` : ''}
+      </div>
+    </div>
 
-    <div class="card">
-      <h3>פעולות</h3>
+    ${canComplain ? `
+      <div class="signal-bar">
+        <div class="sb-text"><strong>עברו ${days} ימים ללא תשובה.</strong> החוק קבע ${30} יום — אפשר להגיש תלונה לרשות להגנת הפרטיות.</div>
+        <button class="btn btn-primary" onclick="fileComplaint('${t.id}')">הגשת תלונה</button>
+      </div>` : ''
+    }
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">פעולות</div></div>
       <div class="actions-row">
-        <button class="btn btn-secondary" onclick="addReply('${t.id}')">הוסיפי תשובה שהתקבלה</button>
+        <button class="btn btn-secondary" onclick="addReply('${t.id}')">הוסיפי תשובה</button>
         <button class="btn btn-secondary" onclick="markConfirmed('${t.id}')">סמני: אושרה מחיקה</button>
-        ${canComplain ? `<button class="btn btn-primary" onclick="fileComplaint('${t.id}')">📢 הגשת תלונה לרשות</button>` : ''}
         <button class="btn btn-ghost" onclick="closeTicket('${t.id}')">סגירת תיק</button>
       </div>
     </div>
 
-    <div class="card">
-      <h3>הבקשה שנשלחה</h3>
-      <div style="font-size:14px; margin: 8px 0;"><strong>נושא:</strong> ${esc(t.subject)}</div>
-      <div class="letter">${esc(t.body)}</div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">המכתב שנשלח</div></div>
+      <div class="letter-meta-row">
+        <div class="k">נושא</div>
+        <div class="v">${esc(t.subject)}</div>
+      </div>
+      <div class="letter-sheet" style="margin-top:12px;">${esc(t.body)}</div>
     </div>
 
-    <div class="card">
-      <h3>היסטוריה</h3>
-      <div style="margin-top:12px;">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">היסטוריה</div></div>
+      <div class="timeline">
         ${(t.events||[]).map(e => `
-          <div class="timeline-item">
-            <div class="when">${fmtDate(e.at)}</div>
-            <div class="what">${esc(e.label)}</div>
-            ${e.note ? `<div style="font-size:13px; color:var(--ink-soft); margin-top:4px;">${esc(e.note)}</div>` : ''}
+          <div class="tl-item">
+            <div class="tl-when">${fmtDate(e.at)}</div>
+            <div class="tl-what">${esc(e.label)}</div>
+            ${e.note ? `<div class="tl-note">${esc(e.note)}</div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -486,13 +517,83 @@ function view_ticket() {
   `;
 }
 
-// --- Actions ---
+// === Bulk ===
+function view_bulk() {
+  const byCat = groupBy(window.ENTITIES, 'category');
+  return `
+    <div class="section-head">
+      <div class="back" onclick="go('home')">← חזרה</div>
+      <h2>שליחה לכמה גופים בבת אחת</h2>
+      <div class="lede">סמני את הגופים — הכלי יכין מכתב לכל אחד.</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">קטגוריות שלמות</div></div>
+      <div class="chips">
+        ${Object.entries(window.CATEGORIES).map(([cat, meta]) => `
+          <div class="chip" onclick="bulkSelectCat('${cat}')">
+            ${meta.label} · ${byCat[cat]?.length || 0}
+          </div>
+        `).join('')}
+      </div>
+      <div class="actions-row" style="margin-top:14px;">
+        <button class="btn btn-secondary" onclick="bulkSelectAll()">בחרי הכל</button>
+        <button class="btn btn-ghost" onclick="bulkClear()">נקי</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">בחירה ידנית</div>
+      </div>
+      <div id="bulk-list" style="display:flex;flex-direction:column;gap:2px;">
+        ${window.ENTITIES.map(e => `
+          <div class="entity-item" data-bulk-id="${e.id}" onclick="bulkToggle('${e.id}')">
+            <div><div class="ei-name">${esc(e.name)}</div></div>
+            <div class="ei-email">${esc(e.email || '—')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="actions-row" style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="bulkProceed()">
+        הכן מכתבים <span class="mono">(<span id="bulk-count">0</span>)</span>
+      </button>
+      <button class="btn btn-ghost" onclick="go('home')">ביטול</button>
+    </div>
+  `;
+}
+
+// === Scan ===
+function view_scan() {
+  return `
+    <div class="section-head">
+      <div class="back" onclick="go('home')">← חזרה</div>
+      <h2>סריקת מספרים שהתקשרו</h2>
+      <div class="lede">הדביקי מספרים — אחד בשורה. נסמן את הספאמרים הידועים.</div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <textarea id="scan-input" rows="8" class="mono" placeholder="072-1234567&#10;077-9876543&#10;+972-3-1234567"></textarea>
+      </div>
+      <div class="actions-row" style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="runScan()">סרוק</button>
+      </div>
+    </div>
+
+    <div id="scan-results"></div>
+  `;
+}
+
+// =========== ACTIONS ===========
+
 function saveDraftAndNext() {
   const draft = state.draft || {};
   draft.callDate = $('#f-date').value;
   draft.number = $('#f-number').value.trim();
   draft.content = $('#f-content').value.trim();
-  // channel + known are already set via chip handlers
   state.draft = draft;
   Store.save(state);
   go('identify');
@@ -514,109 +615,90 @@ function toggleGoal(key) {
 
 function saveProfile(returnTo) {
   state.profile = {
-    name:  $('#p-name').value.trim(),
-    id:    $('#p-id').value.trim(),
+    name: $('#p-name').value.trim(),
+    id: $('#p-id').value.trim(),
     email: $('#p-email').value.trim(),
     phone: $('#p-phone').value.trim()
   };
   Store.save(state);
+  toast('נשמר');
   go(returnTo || 'home');
 }
 
 function copyLetter() {
   const t = $('#letter-body').innerText;
-  navigator.clipboard.writeText(t).then(() => {
-    toast('הועתק ✓');
-  });
+  navigator.clipboard.writeText(t).then(() => toast('הועתק'));
 }
 
 function downloadLetter() {
   const d = state.draft;
   const entity = window.ENTITIES.find(e => e.id === d.entityId);
   const body = $('#letter-body').innerText;
-  const blob = new Blob([body], { type:'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `בקשה-${entity?.name || 'ללא-שם'}.txt`; a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(new Blob([body], {type:'text/plain;charset=utf-8'}), `בקשה-${entity?.name||'ללא-שם'}.txt`);
+}
+
+function buildTicket(status) {
+  const d = state.draft;
+  const entity = window.ENTITIES.find(e => e.id === d.entityId);
+  const goalKey = (d.goals||[])[0];
+  const tpl = window.TEMPLATES[goalKey];
+  const p = state.profile;
+  const payload = {
+    userName: p.name, userId: p.id,
+    entityName: entity.name,
+    callDate: d.callDate ? fmtDate(d.callDate) : '',
+    callChannel: d.callChannel,
+    knownDetails: (d.known||[]).join(', ') || 'שם ומספר טלפון',
+    isLeak: entity.leaked
+  };
+  const body = $('#letter-body')?.innerText || tpl.body(payload);
+  const subject = tpl.subject(payload);
+  const events = [{ type:'drafted', at: new Date().toISOString(), label:'הבקשה הוכנה' }];
+  if (status === 'sent') events.push({ type:'sent', at: new Date().toISOString(), label:'סומן כנשלח' });
+  return {
+    id: uid(), entityId: entity.id, entityName: entity.name,
+    goal: goalKey, goalLabel: tpl.title,
+    subject, body, status, events
+  };
 }
 
 function sendLetter() {
   const d = state.draft;
   const entity = window.ENTITIES.find(e => e.id === d.entityId);
+  const body = $('#letter-body').innerText;
   const goalKey = (d.goals||[])[0];
   const tpl = window.TEMPLATES[goalKey];
   const p = state.profile;
   const payload = {
-    userName: p.name, userId: p.id,
-    entityName: entity.name,
+    userName: p.name, userId: p.id, entityName: entity.name,
     callDate: d.callDate ? fmtDate(d.callDate) : '',
     callChannel: d.callChannel,
     knownDetails: (d.known||[]).join(', ') || 'שם ומספר טלפון',
     isLeak: entity.leaked
   };
-  const body = $('#letter-body').innerText;
   const subject = tpl.subject(payload);
   const mailto = `mailto:${entity.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-  // Save ticket
-  const ticket = {
-    id: uid(),
-    entityId: entity.id, entityName: entity.name,
-    goal: goalKey, goalLabel: tpl.title,
-    subject, body,
-    status: 'ready',
-    events: [
-      { type:'drafted', at: new Date().toISOString(), label:'הבקשה הוכנה' },
-      { type:'mail-opened', at: new Date().toISOString(), label:'תוכנת הדואר נפתחה' }
-    ]
-  };
+  const ticket = buildTicket('ready');
+  ticket.events.push({ type:'mail-opened', at: new Date().toISOString(), label:'תוכנת הדואר נפתחה' });
   state.tickets = state.tickets || [];
   state.tickets.unshift(ticket);
   state.draft = {};
   Store.save(state);
-
   window.location.href = mailto;
   setTimeout(() => {
-    if (confirm('שלחת את ההודעה? אסמן את התיק כנשלח?')) {
+    if (confirm('שלחת את ההודעה? נסמן את התיק כנשלח?')) {
       const t = state.tickets.find(x => x.id === ticket.id);
       t.status = 'sent';
-      t.events.push({ type:'sent', at: new Date().toISOString(), label:'נשלח (אישור המשתמשת)' });
+      t.events.push({ type:'sent', at: new Date().toISOString(), label:'נשלח' });
       Store.save(state);
-      go('ticket', { id: ticket.id });
-    } else {
-      go('ticket', { id: ticket.id });
     }
+    go('ticket', { id: ticket.id });
   }, 1200);
 }
 
 function markAsSent() {
-  const d = state.draft;
-  const entity = window.ENTITIES.find(e => e.id === d.entityId);
-  const goalKey = (d.goals||[])[0];
-  const tpl = window.TEMPLATES[goalKey];
-  const p = state.profile;
-  const payload = {
-    userName: p.name, userId: p.id,
-    entityName: entity.name,
-    callDate: d.callDate ? fmtDate(d.callDate) : '',
-    callChannel: d.callChannel,
-    knownDetails: (d.known||[]).join(', ') || 'שם ומספר טלפון',
-    isLeak: entity.leaked
-  };
-  const subject = tpl.subject(payload);
-  const body = $('#letter-body').innerText;
-  const ticket = {
-    id: uid(),
-    entityId: entity.id, entityName: entity.name,
-    goal: goalKey, goalLabel: tpl.title,
-    subject, body,
-    status: 'sent',
-    events: [
-      { type:'drafted', at: new Date().toISOString(), label:'הבקשה הוכנה' },
-      { type:'sent', at: new Date().toISOString(), label:'סומן כנשלח (ידני)' }
-    ]
-  };
+  const ticket = buildTicket('sent');
   state.tickets = state.tickets || [];
   state.tickets.unshift(ticket);
   state.draft = {};
@@ -625,7 +707,7 @@ function markAsSent() {
 }
 
 function addReply(ticketId) {
-  const text = prompt('הדביקי את תוכן התשובה שהתקבלה:');
+  const text = prompt('הדביקי את תוכן התשובה:');
   if (!text) return;
   const t = state.tickets.find(x => x.id === ticketId);
   t.events.push({ type:'reply', at: new Date().toISOString(), label:'התקבלה תשובה', note: text });
@@ -656,72 +738,55 @@ function fileComplaint(ticketId) {
   const payload = {
     userName: p.name, userId: p.id,
     entityName: entity.name,
-    callDate: '',
-    callChannel: '',
-    knownDetails: ''
+    callDate: '', callChannel: '', knownDetails: ''
   };
   const tpl = window.TEMPLATES.complaint;
   const body = tpl.body(payload);
   const subject = tpl.subject(payload);
   const mailto = `mailto:ppa@justice.gov.il?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  t.events.push({ type:'complaint', at: new Date().toISOString(), label:'תלונה לרשות להגנת הפרטיות (טיוטה נוצרה)' });
+  t.events.push({ type:'complaint', at: new Date().toISOString(), label:'תלונה לרשות להגנת הפרטיות' });
   persist();
   window.location.href = mailto;
 }
 
-// --- Bulk ---
+// === Bulk ===
 let bulkSet = new Set();
-function bulkToggle(id) {
-  if (bulkSet.has(id)) bulkSet.delete(id); else bulkSet.add(id);
-  updateBulkUI();
-}
-function bulkSelectCat(cat) {
-  window.ENTITIES.filter(e => e.category === cat).forEach(e => bulkSet.add(e.id));
-  updateBulkUI();
-}
-function bulkSelectAll() {
-  window.ENTITIES.forEach(e => bulkSet.add(e.id));
-  updateBulkUI();
-}
-function bulkClear() {
-  bulkSet.clear();
-  updateBulkUI();
-}
+function bulkToggle(id) { if (bulkSet.has(id)) bulkSet.delete(id); else bulkSet.add(id); updateBulkUI(); }
+function bulkSelectCat(cat) { window.ENTITIES.filter(e => e.category === cat).forEach(e => bulkSet.add(e.id)); updateBulkUI(); }
+function bulkSelectAll() { window.ENTITIES.forEach(e => bulkSet.add(e.id)); updateBulkUI(); }
+function bulkClear() { bulkSet.clear(); updateBulkUI(); }
 function updateBulkUI() {
   document.querySelectorAll('[data-bulk-id]').forEach(el => {
-    el.classList.toggle('active', bulkSet.has(el.dataset.bulkId));
+    el.classList.toggle('selected', bulkSet.has(el.dataset.bulkId));
   });
-  const c = $('#bulk-count');
-  if (c) c.textContent = bulkSet.size;
+  const c = $('#bulk-count'); if (c) c.textContent = bulkSet.size;
 }
 function bulkProceed() {
   if (!bulkSet.size) { alert('לא בחרת גופים'); return; }
   if (!state.profile.name) { alert('קודם הוסיפי את השם שלך'); go('profile', { returnTo:'bulk' }); return; }
   const chosen = [...bulkSet];
   const now = new Date().toISOString();
-  const tpl = window.TEMPLATES.delete;
   const p = state.profile;
   chosen.forEach(id => {
     const e = window.ENTITIES.find(x => x.id === id);
     const isIntl = e.country !== 'IL';
-    const theTpl = isIntl ? window.TEMPLATES.gdpr : tpl;
+    const theTpl = isIntl ? window.TEMPLATES.gdpr : window.TEMPLATES.delete;
     const payload = { userName:p.name, userId:p.id, entityName:e.name, callDate:'', callChannel:'', knownDetails:'שם, ת.ז.', isLeak:e.leaked };
     state.tickets.unshift({
       id: uid(), entityId:e.id, entityName:e.name,
       goal: isIntl?'gdpr':'delete', goalLabel: theTpl.title,
-      subject: theTpl.subject(payload),
-      body: theTpl.body(payload),
+      subject: theTpl.subject(payload), body: theTpl.body(payload),
       status:'draft',
       events:[{ type:'drafted', at:now, label:'בקשה נוצרה (שליחה המונית)' }]
     });
   });
   Store.save(state);
   bulkSet.clear();
-  alert(`נוצרו ${chosen.length} תיקים. עכשיו עברי על כל אחד ושלחי.`);
+  toast(`נוצרו ${chosen.length} תיקים`);
   go('home');
 }
 
-// --- Scan ---
+// === Scan ===
 function runScan() {
   const raw = $('#scan-input').value;
   const nums = raw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
@@ -732,20 +797,21 @@ function runScan() {
   });
   const flagged = results.filter(r => r.match);
   $('#scan-results').innerHTML = `
-    <div class="card">
-      <h3>תוצאות הסריקה</h3>
-      <p style="color:var(--ink-soft); font-size:14px;">${flagged.length} מתוך ${results.length} זוהו כספאם מוכר.</p>
-      <div style="margin-top:14px;">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">תוצאות <span class="count-chip">${flagged.length}/${results.length}</span></div>
+      </div>
+      <div class="scan-list">
         ${results.map(r => `
-          <div class="card-row" style="padding:10px 0; border-bottom:1px solid var(--border);">
-            <div>${esc(r.num)}</div>
-            ${r.match ? `<span class="pill pill-action">${r.match.note}</span>` : `<span class="pill">לא זוהה</span>`}
+          <div class="scan-row">
+            <div class="num">${esc(r.num)}</div>
+            ${r.match ? `<span class="pill pill-action">${r.match.note}</span>` : `<span class="pill pill-closed">לא זוהה</span>`}
           </div>
         `).join('')}
       </div>
       ${flagged.length ? `
-        <div style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="exportBlocklist(${JSON.stringify(flagged.map(r=>r.num)).replace(/"/g,'&quot;')})">ייצוא לרשימת חסימה</button>
+        <div class="actions-row" style="margin-top:16px;">
+          <button class="btn btn-secondary" onclick='exportBlocklist(${JSON.stringify(flagged.map(r=>r.num))})'>ייצוא לרשימת חסימה (CSV)</button>
         </div>
       ` : ''}
     </div>
@@ -754,30 +820,32 @@ function runScan() {
 
 function exportBlocklist(nums) {
   const csv = 'number\n' + nums.join('\n');
-  const blob = new Blob([csv], { type:'text/csv' });
-  const url = URL.createObjectURL(blob); const a = document.createElement('a');
-  a.href = url; a.download = 'mispari-blocklist.csv'; a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(new Blob([csv], {type:'text/csv'}), 'mispari-blocklist.csv');
 }
 
-// --- Suggestion engine ---
 function suggestEntities(d) {
   const txt = ((d.content||'') + ' ' + (d.number||'')).toLowerCase();
   const scored = window.ENTITIES.map(e => {
     let score = 0;
     const name = e.name.toLowerCase();
     if (txt.includes(name)) score += 10;
-    // category hints
     if (/ביטוח|פוליסה|פנסיה/.test(txt) && e.category==='insurance') score += 3;
     if (/בנק|אשראי|הלוואה/.test(txt) && e.category==='bank') score += 3;
-    if (/סלולר|חבילה|מכשיר|תוכנית/.test(txt) && e.category==='telco') score += 3;
+    if (/סלולר|חבילה|מכשיר/.test(txt) && e.category==='telco') score += 3;
     if (/קמפיין|מפלגה|בחירות|מצביע/.test(txt) && e.category==='party') score += 3;
     return { e, score };
   }).filter(x => x.score > 0).sort((a,b) => b.score-a.score).slice(0,4);
   return scored.map(x => x.e);
 }
 
-// --- Chip handlers (event delegation) ---
+function filterEntities(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#entity-list [data-entity-name]').forEach(el => {
+    const n = el.dataset.entityName.toLowerCase();
+    el.style.display = n.includes(q) ? '' : 'none';
+  });
+}
+
 document.addEventListener('click', (ev) => {
   const chip = ev.target.closest('[data-chip]');
   if (!chip) return;
@@ -796,53 +864,35 @@ document.addEventListener('click', (ev) => {
   Store.save(state);
 });
 
-// --- Filter entities ---
-function filterEntities(q) {
-  const items = document.querySelectorAll('#entity-list [data-entity-name]');
-  q = q.toLowerCase();
-  items.forEach(el => {
-    const n = el.dataset.entityName.toLowerCase();
-    el.style.display = n.includes(q) ? '' : 'none';
-  });
-}
-
-// --- Utils ---
 function groupBy(arr, key) {
-  return arr.reduce((acc, item) => {
-    const k = item[key];
-    (acc[k] = acc[k] || []).push(item);
-    return acc;
-  }, {});
+  return arr.reduce((acc, item) => { (acc[item[key]] = acc[item[key]] || []).push(item); return acc; }, {});
 }
 
 function toast(msg) {
   const t = document.createElement('div');
+  t.className = 'toast';
   t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:10px 20px;border-radius:999px;font-size:14px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 1800);
 }
 
-// --- Router ---
 const views = {
-  'home':       view_home,
-  'new-call':   view_newCall,
-  'identify':   view_identify,
-  'goals':      view_goals,
-  'review':     view_review,
-  'profile':    view_profile,
-  'ticket':     view_ticket,
-  'bulk':       view_bulk,
-  'scan':       view_scan
+  'home':     view_home,
+  'new-call': view_newCall,
+  'identify': view_identify,
+  'goals':    view_goals,
+  'review':   view_review,
+  'profile':  view_profile,
+  'ticket':   view_ticket,
+  'bulk':     view_bulk,
+  'scan':     view_scan
 };
 
 function render() {
-  const main = $('#main');
-  const view = views[route.name] || views.home;
-  main.innerHTML = view();
+  $('#main').innerHTML = (views[route.name] || views.home)();
+  document.querySelectorAll('.rail-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.nav === route.name);
+  });
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  render();
-});
+document.addEventListener('DOMContentLoaded', render);
