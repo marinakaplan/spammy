@@ -157,6 +157,11 @@
     .avatars .avatar.a3 { background: linear-gradient(135deg, #b89a7a, #8f7055); }
 
     /* LOGOS MARQUEE */
+    .hero-film { width: 100%; max-width: 1080px; margin: 56px auto 0; border-radius: 18px; overflow: hidden; background: #f5f3ee;
+      box-shadow: 0 0 0 1px rgba(10,10,10,.06), 0 40px 90px -30px rgba(120,60,20,.35), 0 12px 30px -12px rgba(120,60,20,.2);
+      animation: rise 0.7s cubic-bezier(.2,.7,.2,1) 560ms both; }
+    .hero-film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+    @media (max-width: 720px) { .hero-film { margin-top: 36px; border-radius: 12px; } }
     .logos-marquee {
       margin-top: 44px;
       overflow: hidden;
@@ -592,6 +597,12 @@
         <div class="avatar a1"></div><div class="avatar a2"></div><div class="avatar a3"></div>
       </div>
       <span><strong style="color: var(--ink); font-weight: 500;">50+</strong> גופים ישראליים ובינלאומיים ברשימת היעדים</span>
+    </div>
+
+    <div class="hero-film">
+      <video autoplay muted loop playsinline preload="metadata" poster="assets/hero-poster.jpg" aria-label="הדגמה: ספאמי מזהה את השולח ומכין מכתב בקשה חוקי">
+        <source src="assets/hero.mp4" type="video/mp4" />
+      </video>
     </div>
 
     <div class="logos-marquee" aria-hidden="true">

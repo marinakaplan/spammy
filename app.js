@@ -195,7 +195,7 @@ function view_newCall() {
   return `
     <div class="section-head">
       <div class="back" onclick="go('home')">← חזרה</div>
-      <h2>תיעוד פנייה שקיבלתםם</h2>
+      <h2>תיעוד פנייה שקיבלתם</h2>
       <div class="lede">כמה פרטים כדי להבין מי פנה, מתי, ומה היה ברשותם.</div>
     </div>
     ${steps(0)}
