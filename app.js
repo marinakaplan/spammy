@@ -139,7 +139,7 @@ function view_home() {
       <div class="panel">
         <div class="panel-head"><div class="panel-title">התחלה</div></div>
         <div style="font-size:14px; color:var(--muted); margin-bottom:16px;">
-          התחילי בלתעד פנייה שקיבלת. הכלי יזהה את הגוף, יכין בקשת מחיקה חוקית, ויעקוב אחרי התשובות.
+          התחילו בלתעד פנייה שקיבלתם. הכלי יזהו את הגוף, יכין בקשת מחיקה חוקית, ויעקוב אחרי התשובות.
         </div>
         <button class="btn btn-primary btn-lg" onclick="go('new-call')">תעוד פנייה חדשה</button>
       </div>` : ''
@@ -147,16 +147,16 @@ function view_home() {
 
     ${!state.profile.name ? `
       <div class="panel">
-        <div class="panel-head"><div class="panel-title">הפרטים שלך</div></div>
+        <div class="panel-head"><div class="panel-title">הפרטים שלכם</div></div>
         <div style="font-size:14px; color:var(--muted); margin-bottom:16px;">
-          הפרטים משמשים להכנת הבקשות בשמך. נשמרים רק במכשיר הזה, לא נשלחים לשום שרת.
+          הפרטים משמשים להכנת הבקשות בשמכם. נשמרום רק במכשיר הזה, לא נשלחים לשום שרת.
         </div>
-        <button class="btn btn-secondary" onclick="go('profile')">הגדר פרטים</button>
+        <button class="btn btn-secondary" onclick="go('profile')">הגדירו פרטים</button>
       </div>` : ''
     }
 
     <footer class="app-footer">
-      קוד פתוח · MIT · <a href="https://github.com/" target="_blank">GitHub</a> · כל הנתונים נשמרים במכשיר שלך
+      קוד פתוח · MIT · <a href="https://github.com/" target="_blank">GitHub</a> · כל הנתונים נשמרום במכשיר שלכם
     </footer>
   `;
 }
@@ -195,7 +195,7 @@ function view_newCall() {
   return `
     <div class="section-head">
       <div class="back" onclick="go('home')">← חזרה</div>
-      <h2>תיעוד פנייה שקיבלת</h2>
+      <h2>תיעוד פנייה שקיבלתםם</h2>
       <div class="lede">כמה פרטים כדי להבין מי פנה, מתי, ומה היה ברשותם.</div>
     </div>
     ${steps(0)}
@@ -203,7 +203,7 @@ function view_newCall() {
     <div class="panel">
       <div class="fieldset">
         <div class="field">
-          <label>מתי פנו אליך</label>
+          <label>מתי פנו אליכם</label>
           <input type="date" id="f-date" value="${d.callDate || new Date().toISOString().slice(0,10)}" />
         </div>
         <div class="field">
@@ -222,11 +222,11 @@ function view_newCall() {
         <div class="field">
           <label>מה הפונה ידע עליך</label>
           <div class="chips" id="chips-known">
-            ${['שם מלא','כתובת','גיל','פרטי משפחה','תחום עניין','היסטוריית שימוש','נתוני אשראי','אחר'].map(c => `
+            ${['שם מלא','כתובת','גיל','פרטי משפחה','תחום עניין','היסטוריית שימוש','נתוני אשראו','אחר'].map(c => `
               <div class="chip ${(d.known||[]).includes(c)?'active':''}" data-chip="known-multi" data-val="${c}">${c}</div>
             `).join('')}
           </div>
-          <div class="hint">סמני רק מה היה בידיהם — אין צורך להזין את הפרט עצמו</div>
+          <div class="hint">סמנו רק מה היה בידיהם — אין צורך להזין את הפרט עצמו</div>
         </div>
         <div class="field">
           <label>תוכן הפנייה <span style="color:var(--muted);font-weight:400;">· לא חובה</span></label>
@@ -251,8 +251,8 @@ function view_identify() {
   return `
     <div class="section-head">
       <div class="back" onclick="go('new-call')">← חזרה לתיעוד</div>
-      <h2>מי פנה אלייך?</h2>
-      <div class="lede">בחרי את הגוף מהרשימה. אם לא ברור — בחרי "לא מזוהה".</div>
+      <h2>מי פנה אליכם?</h2>
+      <div class="lede">בחרו את הגוף מהרשימה. אם לא ברור — בחרו "לא מזוהה".</div>
     </div>
     ${steps(1)}
 
@@ -293,7 +293,7 @@ function view_identify() {
     </div>
 
     <div class="actions-row" style="margin-top:20px;">
-      <button class="btn btn-primary" onclick="${d.entityId ? "go('goals')" : 'alert(\\\"בחרי גוף קודם\\\")'}">המשך</button>
+      <button class="btn btn-primary" onclick="${d.entityId ? "go('goals')" : 'alert(\\\"בחרו גוף קודם\\\")'}">המשך</button>
       <button class="btn btn-ghost" onclick="go('new-call')">חזרה</button>
     </div>
   `;
@@ -314,7 +314,7 @@ function view_goals() {
   return `
     <div class="section-head">
       <div class="back" onclick="go('identify')">← חזרה</div>
-      <h2>מה את רוצה מ־${esc(entity.name)}?</h2>
+      <h2>מה אתם רוצים מ־${esc(entity.name)}?</h2>
       <div class="lede">כל מטרה היא מכתב נפרד. אפשר לבחור יותר מאחת.</div>
     </div>
     ${steps(2)}
@@ -338,7 +338,7 @@ function view_goals() {
     </div>
 
     <div class="actions-row" style="margin-top:20px;">
-      <button class="btn btn-primary" onclick="${(d.goals||[]).length ? "go('review')" : 'alert(\\\"בחרי לפחות מטרה אחת\\\")'}">הכנת המכתב</button>
+      <button class="btn btn-primary" onclick="${(d.goals||[]).length ? "go('review')" : 'alert(\\\"בחרו לפחות מטרה אחת\\\")'}">הכנת המכתב</button>
       <button class="btn btn-ghost" onclick="go('identify')">חזרה</button>
     </div>
   `;
@@ -354,11 +354,11 @@ function view_review() {
     return `
       <div class="section-head">
         <div class="back" onclick="go('goals')">← חזרה</div>
-        <h2>נדרש להוסיף את השם שלך</h2>
-        <div class="lede">הבקשה צריכה לכלול את שמך, אחרת הגוף לא יזהה את הרשומה.</div>
+        <h2>נדרש להוסיף את השם שלכם</h2>
+        <div class="lede">הבקשה צריכה לכלול את שמכם, אחרת הגוף לא יזהה את הרשומה.</div>
       </div>
       <div class="actions-row">
-        <button class="btn btn-primary" onclick="go('profile', { returnTo: 'review' })">הוסיפי פרטים</button>
+        <button class="btn btn-primary" onclick="go('profile', { returnTo: 'review' })">הוסיפו פרטים</button>
       </div>
     `;
   }
@@ -415,8 +415,8 @@ function view_profile() {
   return `
     <div class="section-head">
       <div class="back" onclick="go('${returnTo}')">← חזרה</div>
-      <h2>הפרטים שלך</h2>
-      <div class="lede">נשמרים רק במכשיר הזה. משמשים להכנת הבקשות בשמך.</div>
+      <h2>הפרטים שלכם</h2>
+      <div class="lede">נשמרום רק במכשיר הזה. משמשים להכנת הבקשות בשמכם.</div>
     </div>
 
     <div class="panel">
@@ -487,8 +487,8 @@ function view_ticket() {
     <div class="panel">
       <div class="panel-head"><div class="panel-title">פעולות</div></div>
       <div class="actions-row">
-        <button class="btn btn-secondary" onclick="addReply('${t.id}')">הוסיפי תשובה</button>
-        <button class="btn btn-secondary" onclick="markConfirmed('${t.id}')">סמני: אושרה מחיקה</button>
+        <button class="btn btn-secondary" onclick="addReply('${t.id}')">הוסיפו תשובה</button>
+        <button class="btn btn-secondary" onclick="markConfirmed('${t.id}')">סמנו: אושרה מחיקה</button>
         <button class="btn btn-ghost" onclick="closeTicket('${t.id}')">סגירת תיק</button>
       </div>
     </div>
@@ -524,7 +524,7 @@ function view_bulk() {
     <div class="section-head">
       <div class="back" onclick="go('home')">← חזרה</div>
       <h2>שליחה לכמה גופים בבת אחת</h2>
-      <div class="lede">סמני את הגופים — הכלי יכין מכתב לכל אחד.</div>
+      <div class="lede">סמנו את הגופים — הכלי יכין מכתב לכל אחד.</div>
     </div>
 
     <div class="panel">
@@ -537,7 +537,7 @@ function view_bulk() {
         `).join('')}
       </div>
       <div class="actions-row" style="margin-top:14px;">
-        <button class="btn btn-secondary" onclick="bulkSelectAll()">בחרי הכל</button>
+        <button class="btn btn-secondary" onclick="bulkSelectAll()">בחרו הכל</button>
         <button class="btn btn-ghost" onclick="bulkClear()">נקי</button>
       </div>
     </div>
@@ -558,7 +558,7 @@ function view_bulk() {
 
     <div class="actions-row" style="margin-top:20px;">
       <button class="btn btn-primary" onclick="bulkProceed()">
-        הכן מכתבים <span class="mono">(<span id="bulk-count">0</span>)</span>
+        הכינו מכתבים <span class="mono">(<span id="bulk-count">0</span>)</span>
       </button>
       <button class="btn btn-ghost" onclick="go('home')">ביטול</button>
     </div>
@@ -571,7 +571,7 @@ function view_scan() {
     <div class="section-head">
       <div class="back" onclick="go('home')">← חזרה</div>
       <h2>סריקת מספרים שהתקשרו</h2>
-      <div class="lede">הדביקי מספרים — אחד בשורה. נסמן את הספאמרים הידועים.</div>
+      <div class="lede">הדביקו מספרים — אחד בשורה. נסמן את הספאמרים הידועים.</div>
     </div>
 
     <div class="panel">
@@ -707,7 +707,7 @@ function markAsSent() {
 }
 
 function addReply(ticketId) {
-  const text = prompt('הדביקי את תוכן התשובה:');
+  const text = prompt('הדביקו את תוכן התשובה:');
   if (!text) return;
   const t = state.tickets.find(x => x.id === ticketId);
   t.events.push({ type:'reply', at: new Date().toISOString(), label:'התקבלה תשובה', note: text });
@@ -763,7 +763,7 @@ function updateBulkUI() {
 }
 function bulkProceed() {
   if (!bulkSet.size) { alert('לא בחרת גופים'); return; }
-  if (!state.profile.name) { alert('קודם הוסיפי את השם שלך'); go('profile', { returnTo:'bulk' }); return; }
+  if (!state.profile.name) { alert('קודם הוסיפו את השם שלכם'); go('profile', { returnTo:'bulk' }); return; }
   const chosen = [...bulkSet];
   const now = new Date().toISOString();
   const p = state.profile;
@@ -830,7 +830,7 @@ function suggestEntities(d) {
     const name = e.name.toLowerCase();
     if (txt.includes(name)) score += 10;
     if (/ביטוח|פוליסה|פנסיה/.test(txt) && e.category==='insurance') score += 3;
-    if (/בנק|אשראי|הלוואה/.test(txt) && e.category==='bank') score += 3;
+    if (/בנק|אשראו|הלוואה/.test(txt) && e.category==='bank') score += 3;
     if (/סלולר|חבילה|מכשיר/.test(txt) && e.category==='telco') score += 3;
     if (/קמפיין|מפלגה|בחירות|מצביע/.test(txt) && e.category==='party') score += 3;
     return { e, score };
