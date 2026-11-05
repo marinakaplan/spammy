@@ -3,48 +3,789 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>מספרי · ספר הבקשות</title>
-  <meta name="description" content="כלי קוד פתוח לתיעוד פניות ספאם ושליחת בקשות מחיקה חוקיות לפי חוק הגנת הפרטיות ו-GDPR." />
+  <title>מספרי · מכין בקשות מחיקה חוקיות לכל מי שאוסף עליך מידע</title>
+  <meta name="description" content="כלי קוד פתוח לישראלים. מתעד פניות ספאם, מזהה את הגוף, ומכין בקשה חוקית למחיקת המידע לפי חוק הגנת הפרטיות ו-GDPR." />
+  <meta property="og:title" content="מספרי" />
+  <meta property="og:description" content="כלי קוד פתוח למחיקת המידע האישי שלך מכל חברה שאוספת אותו." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Crect x='6' y='12' width='20' height='8' rx='1.5' stroke='%23f8f8f8' stroke-width='1.4' fill='none'/%3E%3Cline x1='4' y1='22' x2='28' y2='10' stroke='%23f8f8f8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ground: #f8f8f8;
+      --paper: #efece4;
+      --surface: #ffffff;
+      --text: #0a0a0a;
+      --muted: #6b6b6b;
+      --signal: #1d5fbf;
+      --warning: #92400e;
+      --rule: #e6e6e6;
+      --strike: #c4242a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Geist', -apple-system, system-ui, sans-serif;
+      background: var(--ground);
+      color: var(--text);
+      direction: rtl;
+      line-height: 1.55;
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .mono { font-family: 'Geist Mono', 'SF Mono', monospace; }
+
+    /* ========== TOP BAR ========== */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .topbar > * { pointer-events: auto; }
+    .topbar .mark {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      background: var(--text);
+      color: var(--ground);
+      border-radius: 6px;
+      transition: transform 0.18s ease;
+    }
+    .topbar .mark:hover { transform: rotate(-4deg); }
+    .topbar .mark svg { width: 20px; height: 20px; }
+    .topbar nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      font-size: 14px;
+    }
+    .topbar nav a {
+      color: var(--text);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .topbar nav a:hover { background: rgba(10,10,10,0.05); }
+    .topbar nav .cta {
+      background: var(--text);
+      color: var(--ground);
+      padding: 8px 14px;
+      font-weight: 500;
+    }
+    .topbar nav .cta:hover { background: #2a2a2a; }
+
+    /* ========== SPLIT STAGE ========== */
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+      position: relative;
+    }
+    .stage-fixed {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: var(--text);
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .stage-flow {
+      padding: 120px 72px 120px;
+      max-width: 620px;
+      width: 100%;
+      justify-self: end;
+    }
+
+    /* The letter artifact */
+    .letter-stage {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      aspect-ratio: 0.72;
+      background: var(--paper);
+      border-radius: 4px;
+      padding: 48px 44px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 20px 50px rgba(0,0,0,0.4);
+      font-size: 13px;
+      line-height: 1.7;
+      color: #1a1a1a;
+      overflow: hidden;
+      transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+    }
+    .letter-stage .l-to {
+      font-size: 11px;
+      color: #6b6b6b;
+      margin-bottom: 8px;
+    }
+    .letter-stage .l-subject {
+      font-weight: 600;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .letter-stage .l-body p {
+      margin-bottom: 11px;
+    }
+    .letter-stage .l-body .strike {
+      position: relative;
+      display: inline-block;
+    }
+    .letter-stage .l-body .strike::after {
+      content: '';
+      position: absolute;
+      left: -4px; right: -4px;
+      top: 55%;
+      height: 2px;
+      background: var(--strike);
+      transform: scaleX(0);
+      transform-origin: right;
+      animation: letter-strike 1.6s cubic-bezier(.2,.7,.2,1) 1.8s forwards;
+    }
+    .letter-stage .l-sig {
+      margin-top: 20px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: #6b6b6b;
+    }
+    .letter-stage .l-seal {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      width: 68px; height: 68px;
+      border: 2px solid var(--strike);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      transform: rotate(-12deg);
+      color: var(--strike);
+      font-size: 9px;
+      text-align: center;
+      line-height: 1.2;
+      font-weight: 600;
+      opacity: 0;
+      animation: seal 0.4s cubic-bezier(.2,.7,.2,1) 2.4s forwards;
+    }
+    @keyframes letter-strike {
+      to { transform: scaleX(1); }
+    }
+    @keyframes seal {
+      from { opacity: 0; transform: rotate(-30deg) scale(0.5); }
+      to   { opacity: 1; transform: rotate(-12deg) scale(1); }
+    }
+
+    /* ========== HERO BAND ========== */
+    .hero-band {
+      padding-bottom: 60px;
+    }
+    .hero-band h1 {
+      font-size: 56px;
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      line-height: 1.02;
+      margin-bottom: 24px;
+    }
+    .hero-band .lede {
+      font-size: 20px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 36ch;
+      margin-bottom: 36px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 36px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      color: inherit;
+    }
+    .btn-primary { background: var(--text); color: var(--ground); border-color: var(--text); }
+    .btn-primary:hover { background: #2a2a2a; }
+    .btn-ghost { color: var(--text); }
+    .btn-ghost:hover { background: rgba(10,10,10,0.05); }
+
+    /* ========== WORDMARK (overlapping) ========== */
+    .wordmark {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      right: 50%;
+      font-size: clamp(80px, 11vw, 180px);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      color: var(--ground);
+      mix-blend-mode: difference;
+      pointer-events: none;
+      z-index: 20;
+      transition: transform 0.6s ease;
+    }
+
+    /* ========== SECTIONS (flow column) ========== */
+    section {
+      padding: 100px 0;
+      position: relative;
+    }
+    section h2 {
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      margin-bottom: 24px;
+    }
+    section p, section li {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    section p + p { margin-top: 18px; }
+    .muted { color: var(--muted); }
+
+    /* Intro — run-in first line */
+    .intro .lead-run { font-weight: 500; color: var(--text); }
+    .intro p { color: var(--muted); }
+    .intro p:first-child { color: var(--text); }
+
+    /* How it works — run-in column */
+    .how-it-works .step {
+      margin-bottom: 36px;
+    }
+    .how-it-works .step .step-run {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .how-it-works .step p {
+      color: var(--muted);
+    }
+
+    /* Features — capabilities menu */
+    .menu-sheet {
+      background: var(--surface);
+      padding: 36px 28px;
+      border-radius: 4px;
+      border: 1px solid var(--rule);
+    }
+    .menu-sheet h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+    }
+    .menu-sheet .m-group { margin-bottom: 28px; }
+    .menu-sheet .m-group:last-child { margin-bottom: 0; }
+    .menu-row {
+      display: flex;
+      align-items: baseline;
+      padding: 8px 0;
+      font-size: 16px;
+    }
+    .menu-row .m-name { font-weight: 400; color: var(--text); }
+    .menu-row .m-leader {
+      flex: 1;
+      margin: 0 10px;
+      border-bottom: 2px dotted var(--rule);
+      position: relative;
+      top: -4px;
+    }
+    .menu-row .m-count {
+      font-family: 'Geist Mono', monospace;
+      font-size: 14px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .menu-row .m-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+      margin-right: 0;
+    }
+
+    /* Stats — quiet figure lines */
+    .stats .stat-row {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 24px;
+      align-items: baseline;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .stats .stat-row:last-child { border-bottom: none; }
+    .stats .fig {
+      font-size: 32px;
+      font-weight: 500;
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .stats .fig.signal { color: var(--signal); }
+    .stats .desc {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 40ch;
+    }
+
+    /* FAQ — reading text */
+    .faq .q {
+      margin-bottom: 20px;
+    }
+    .faq .q .question {
+      font-weight: 500;
+      color: var(--text);
+    }
+    .faq .q .answer { color: var(--muted); }
+
+    /* CTA — plain sentence */
+    .cta-section {
+      padding: 160px 0 100px;
+    }
+    .cta-section .cta-sentence {
+      font-size: 22px;
+      line-height: 1.4;
+      max-width: 34ch;
+      margin-bottom: 24px;
+    }
+
+    /* Footer */
+    footer.site-footer {
+      background: var(--text);
+      color: var(--ground);
+      padding: 80px 32px 40px;
+      margin-top: 0;
+    }
+    footer.site-footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+    }
+    footer.site-footer .footer-mark {
+      font-size: 72px;
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      color: var(--ground);
+    }
+    footer.site-footer .footer-tag {
+      font-size: 14px;
+      color: #8a8a8a;
+      margin-top: 12px;
+      max-width: 40ch;
+    }
+    footer.site-footer .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 18px;
+    }
+    footer.site-footer .footer-links a {
+      color: var(--ground);
+      text-decoration: none;
+      padding: 4px 0;
+      transition: color 0.15s;
+      display: block;
+    }
+    footer.site-footer .footer-links a:hover { color: #8a8a8a; }
+    footer.site-footer .legal {
+      grid-column: 1/-1;
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid #2a2a2a;
+      font-size: 13px;
+      color: #8a8a8a;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    footer.site-footer .legal a { color: #8a8a8a; }
+
+    /* ========== MOBILE ========== */
+    @media (max-width: 900px) {
+      .stage { grid-template-columns: 1fr; }
+      .stage-fixed {
+        position: sticky;
+        top: 0;
+        height: 60vh;
+        z-index: 1;
+      }
+      .stage-flow {
+        padding: 48px 20px 80px;
+        max-width: 100%;
+        justify-self: stretch;
+        background: var(--ground);
+        position: relative;
+        z-index: 2;
+      }
+      .letter-stage {
+        max-width: 320px;
+        padding: 28px 24px;
+        font-size: 12px;
+      }
+      .hero-band h1 { font-size: 36px; }
+      .hero-band .lede { font-size: 17px; }
+      .topbar { padding: 12px 16px; }
+      .topbar nav { gap: 8px; font-size: 13px; }
+      .topbar nav a:not(.cta) { display: none; }
+      .wordmark {
+        position: static;
+        margin: 0 auto 0;
+        font-size: 64px;
+        text-align: center;
+        mix-blend-mode: normal;
+        color: var(--text);
+        padding: 40px 0 20px;
+        display: block;
+        width: 100%;
+      }
+      section { padding: 56px 0; }
+      section h2 { font-size: 26px; }
+      section p, section li { font-size: 16px; }
+      .stats .stat-row { grid-template-columns: 80px 1fr; gap: 16px; padding: 14px 0; }
+      .stats .fig { font-size: 26px; }
+      footer.site-footer { padding: 48px 20px 28px; }
+      footer.site-footer .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+      footer.site-footer .footer-mark { font-size: 48px; }
+      footer.site-footer .footer-links { font-size: 16px; }
+      footer.site-footer .legal { flex-direction: column; gap: 8px; }
+      .menu-sheet { padding: 24px 20px; }
+      .cta-section { padding: 80px 0 60px; }
+      .cta-section .cta-sentence { font-size: 19px; }
+    }
+
+    /* ========== MOTION ========== */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes rise-letter {
+      from { opacity: 0; transform: translateY(40px) rotate(-1deg); }
+      to   { opacity: 1; transform: translateY(0) rotate(0); }
+    }
+    .hero-band h1,
+    .hero-band .lede,
+    .hero-band .hero-actions {
+      animation: rise 0.6s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .hero-band h1 { animation-delay: 150ms; }
+    .hero-band .lede { animation-delay: 300ms; }
+    .hero-band .hero-actions { animation-delay: 450ms; }
+    .letter-stage {
+      animation: rise-letter 0.7s cubic-bezier(.2,.7,.2,1) 300ms both;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal.d1 { transition-delay: 60ms; }
+    .reveal.d2 { transition-delay: 120ms; }
+    .reveal.d3 { transition-delay: 180ms; }
+    .reveal.d4 { transition-delay: 240ms; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.001s !important;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="shell">
-    <main class="main" id="main"></main>
-    <nav class="rail" aria-label="ניווט ראשי">
-      <div class="rail-mark" onclick="go('home')" title="מספרי" aria-label="מספרי">
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
-          <line x1="4" y1="22" x2="28" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+
+<div class="topbar">
+  <a href="#" class="mark" aria-label="מספרי">
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="4" y1="22" x2="28" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+  <nav>
+    <a href="#how">איך זה עובד</a>
+    <a href="#features">מה יש בפנים</a>
+    <a href="#faq">שאלות</a>
+    <a href="https://github.com/" target="_blank">GitHub</a>
+    <a href="app.html" class="cta">פתחי את הכלי</a>
+  </nav>
+</div>
+
+<main class="stage">
+
+  <!-- ============ FIXED HALF: THE LETTER ============ -->
+  <div class="stage-fixed">
+    <div class="letter-stage" aria-label="מכתב בקשת מחיקה לדוגמה">
+      <div class="l-to">אל: חברת ביטוח כללית בע"מ · privacy@example.co.il</div>
+      <div class="l-subject">דרישה להפסקת פניות ומחיקת מידע אישי</div>
+      <div class="l-body">
+        <p>שמי מרינה רודינסקי, ת.ז. <span class="mono">031234567</span>.</p>
+        <p>ביום 3.11.2026 נוצר איתי קשר טלפוני מטעמכם. בידי הפונה היה: <span class="strike">שמי המלא, השכונה שבה אני גרה, שם בן זוגי</span>.</p>
+        <p>בהתאם לסעיף 17ו לחוק הגנת הפרטיות, התשמ"א-1981, הריני דורשת:</p>
+        <p>1. להפסיק מיידית כל פנייה אליי לצורכי דיוור ישיר.<br/>2. למחוק את פרטיי מכל רשימת תפוצה או מאגר שיווקי.<br/>3. לאשר בכתב את ביצוע המחיקה תוך 30 יום.</p>
+        <p>המשך פניות לאחר מועד זה יהווה הפרה של החוק ויגרור פנייה לרשות להגנת הפרטיות.</p>
       </div>
-      <div class="rail-group">
-        <button class="rail-btn" data-nav="home" onclick="go('home')" aria-label="בית" title="בית">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg>
-        </button>
-        <button class="rail-btn" data-nav="new-call" onclick="go('new-call')" aria-label="פנייה חדשה" title="פנייה חדשה">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14m-7-7h14"/></svg>
-        </button>
-        <button class="rail-btn" data-nav="bulk" onclick="go('bulk')" aria-label="שליחה המונית" title="שליחה המונית">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
-        </button>
-        <button class="rail-btn" data-nav="scan" onclick="go('scan')" aria-label="סריקת מספרים" title="סריקת מספרים">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        </button>
-      </div>
-      <div class="rail-spacer"></div>
-      <div class="rail-group">
-        <button class="rail-btn" data-nav="profile" onclick="go('profile')" aria-label="הגדרות" title="הגדרות">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h.09a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.09a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        </button>
-      </div>
-    </nav>
+      <div class="l-sig">— מרינה רודינסקי · 5.11.2026</div>
+      <div class="l-seal">נוסח מספרי<br/>§17ו</div>
+    </div>
   </div>
-  <script src="data/entities.js"></script>
-  <script src="data/templates.js"></script>
-  <script src="app.js"></script>
+
+  <!-- ============ FLOW HALF ============ -->
+  <div class="stage-flow">
+
+    <!-- Hero -->
+    <section class="hero-band">
+      <h1>בקשת מחיקה חוקית, בחמש דקות.</h1>
+      <p class="lede">
+        מספרי מתעד פנייה שקיבלת, מזהה את הגוף, ומכין בקשת מחיקה לפי חוק הגנת הפרטיות — או GDPR, אם הגוף בחו"ל. קוד פתוח, הכל נשאר במכשיר שלך.
+      </p>
+      <div class="hero-actions">
+        <a href="app.html" class="btn btn-primary">פתחי את הכלי</a>
+        <a href="#how" class="btn btn-ghost">איך זה עובד →</a>
+      </div>
+    </section>
+
+    <!-- Intro -->
+    <section class="intro reveal" id="about">
+      <p><span class="lead-run">ביום הבחירות התקשרו 11 מתנדבים ממפלגות.</span> ידעו את השם שלך, את השכונה, לפעמים גם את גיל הילדים — ולא נתת לאף אחד מהם את הפרטים.</p>
+      <p>המידע עליך הגיע ממאגרים שאף פעם לא הסכמת שיאספו. בישראל יש מאות כאלה: בנקים שמעבירים ללא הסכמה, חברות ביטוח שמוכרות הצלבות, חברות לידים, מתווכי מידע בינלאומיים.</p>
+      <p>חוק הגנת הפרטיות התשמ"א־1981 נותן לך זכות לדעת מה מוחזק עליך, לדרוש הפסקת פניות, ולדרוש מחיקה. הבעיה הייתה שלכל גוף פרוצדורה אחרת — ושזה לוקח שבועות.</p>
+      <p>מספרי עושה את העבודה הזו בחמש דקות.</p>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-it-works" id="how">
+      <h2 class="reveal">איך זה עובד</h2>
+
+      <div class="step reveal d1">
+        <p><span class="step-run">לתעד.</span> פנייה שקיבלת — מי התקשר, מתי, באיזה ערוץ, ומה הם ידעו עליך. סימון קצר, בלי להעלות פרטים רגישים.</p>
+      </div>
+
+      <div class="step reveal d2">
+        <p><span class="step-run">לזהות.</span> מתוך רשימה של חמישים וקצת גופים — מפלגות, בנקים, חברות ביטוח, סלולר, רשתות, לידים, מתווכי מידע בינלאומיים — הכלי מציע מי פנה. אם לא ברור, את בוחרת ידנית.</p>
+      </div>
+
+      <div class="step reveal d3">
+        <p><span class="step-run">לנסח.</span> הכלי מכין מכתב לפי סעיף החוק המתאים: 13 לבירור מקור, 17ו להפסקת דיוור, 14 למחיקה. לגופים בחו"ל — נוסח GDPR באנגלית. כל הנוסחים ניתנים לעריכה לפני שליחה.</p>
+      </div>
+
+      <div class="step reveal d4">
+        <p><span class="step-run">לעקוב.</span> כל תיק נפתח עם היסטוריה. אחרי 30 יום של שתיקה — החוק מחייב מענה — הכלי מתריע וכפתור אחד מכין תלונה לרשות להגנת הפרטיות.</p>
+      </div>
+    </section>
+
+    <!-- Features — capabilities menu -->
+    <section id="features">
+      <h2 class="reveal">מה יש בפנים</h2>
+      <div class="menu-sheet reveal d1">
+        <div class="m-group">
+          <h3>גופים ישראליים</h3>
+          <div class="menu-row">
+            <span class="m-name">מפלגות ומטות בחירות</span>
+            <span class="m-leader"></span>
+            <span class="m-count">12</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">בנקים</span>
+            <span class="m-leader"></span>
+            <span class="m-count">5</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">חברות ביטוח</span>
+            <span class="m-leader"></span>
+            <span class="m-count">5</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">חברות סלולר ותקשורת</span>
+            <span class="m-leader"></span>
+            <span class="m-count">7</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">מועדוני לקוחות וקמעונאות</span>
+            <span class="m-leader"></span>
+            <span class="m-count">5</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">מתווכי לידים ישראליים</span>
+            <span class="m-leader"></span>
+            <span class="m-count">3</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">גופים שחוו דליפת מידע</span>
+            <span class="m-leader"></span>
+            <span class="m-count">2</span>
+          </div>
+        </div>
+
+        <div class="m-group">
+          <h3>גופים בינלאומיים</h3>
+          <div class="menu-row">
+            <span class="m-name">מתווכי מידע (Acxiom, Experian, LexisNexis...)</span>
+            <span class="m-leader"></span>
+            <span class="m-count">15</span>
+          </div>
+        </div>
+
+        <div class="m-group">
+          <h3>פעולות נוספות</h3>
+          <div class="menu-row">
+            <span class="m-name">סריקת מספרים לפי דפוסי VoIP (072, 073, 077)</span>
+            <span class="m-leader"></span>
+            <span class="m-count">כלול</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">שליחה המונית לקטגוריה שלמה</span>
+            <span class="m-leader"></span>
+            <span class="m-count">כלול</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">ייצוא לרשימת חסימה (CSV)</span>
+            <span class="m-leader"></span>
+            <span class="m-count">כלול</span>
+          </div>
+          <div class="menu-row">
+            <span class="m-name">תלונה אוטומטית לרשות להגנת הפרטיות</span>
+            <span class="m-leader"></span>
+            <span class="m-count">כלול</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats — quiet figure lines -->
+    <section class="stats">
+      <h2 class="reveal">במספרים</h2>
+      <div class="stat-row reveal d1">
+        <div class="fig">970</div>
+        <div class="desc">מתווכי מידע בינלאומיים שאוספים עלייך פרטים — לרובם לא נתת הסכמה.</div>
+      </div>
+      <div class="stat-row reveal d2">
+        <div class="fig">30</div>
+        <div class="desc">ימים — זמן המענה שהחוק נותן לגוף שקיבל בקשת מחיקה.</div>
+      </div>
+      <div class="stat-row reveal d3">
+        <div class="fig">5</div>
+        <div class="desc">סעיפי חוק הגנת הפרטיות שעליהם מתבססים נוסחי הבקשות (13, 14, 17ו ועוד).</div>
+      </div>
+      <div class="stat-row reveal d4">
+        <div class="fig signal">0</div>
+        <div class="desc">פרטים שלך שעוברים דרכנו. הכל נשמר רק בדפדפן שלך.</div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <h2 class="reveal">שאלות</h2>
+      <div class="q reveal d1">
+        <p><span class="question">זה חוקי?</span> <span class="answer">כן. חוק הגנת הפרטיות התשמ"א־1981 נותן לכל אדם זכות לדעת איזה מידע מוחזק עליו, לדרוש הפסקת פנייה, ולדרוש מחיקה. הנוסחים מצטטים את סעיפי החוק הרלוונטיים.</span></p>
+      </div>
+      <div class="q reveal d2">
+        <p><span class="question">זה עולה כסף?</span> <span class="answer">לא. הכלי חינמי לחלוטין, בקוד פתוח (רישיון MIT), ללא הרשמה. שימוש אישי, מסחרי, הסבת הקוד — הכל מותר.</span></p>
+      </div>
+      <div class="q reveal d3">
+        <p><span class="question">הפרטים שלי נשלחים למישהו?</span> <span class="answer">לא. הכל נשמר ב־localStorage של הדפדפן. אין שרת, אין מסד נתונים, אין אנליטיקס. אם תמחקי את הדפדפן — הנתונים ילכו איתו.</span></p>
+      </div>
+      <div class="q reveal d4">
+        <p><span class="question">מה אם לא עונים לי?</span> <span class="answer">החוק מחייב מענה תוך 30 יום. הכלי מתריע כשעובר הזמן, ומכין בלחיצה אחת טיוטה של תלונה לרשות להגנת הפרטיות.</span></p>
+      </div>
+      <div class="q reveal">
+        <p><span class="question">זה מחליף עורכת דין?</span> <span class="answer">לא. מספרי אינו ייעוץ משפטי. למקרה פרטני, לתביעה, או למצב מורכב — התייעצי עם עו"ד. הכלי מכין את התיעוד שעו"ד תזדקק לו.</span></p>
+      </div>
+      <div class="q reveal">
+        <p><span class="question">איך אני יכולה לעזור?</span> <span class="answer">תרמו על ה־GitHub: הוספת גופים לרשימה, אימות של אימיילים שהשתנו, תרגום לערבית או לרוסית, תיקוני נוסח משפטי. כל שינוי עובר PR.</span></p>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <p class="cta-sentence reveal">הדרך הכי קצרה לעצור שיחות שאת לא רוצה היא לבקש את זה בכתב.</p>
+      <div class="reveal d1">
+        <a href="app.html" class="btn btn-primary">פתחי את מספרי</a>
+      </div>
+    </section>
+
+  </div><!-- /.stage-flow -->
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-mark">מספרי</div>
+      <p class="footer-tag">כלי קוד פתוח לניהול בקשות מחיקת מידע אישי בישראל ובעולם. נבנה כפרק הראשון של "משווה ומעלה".</p>
+    </div>
+    <div class="footer-links">
+      <a href="app.html">פתחי את הכלי</a>
+      <a href="#how">איך זה עובד</a>
+      <a href="#features">מה יש בפנים</a>
+      <a href="#faq">שאלות נפוצות</a>
+      <a href="https://github.com/" target="_blank">קוד ב־GitHub</a>
+    </div>
+    <div class="legal">
+      <span>© 2026 · MIT License · אינו ייעוץ משפטי</span>
+      <span>בנוי בישראל</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Scaling wordmark — scroll-linked (desktop only)
+  const wordmark = document.createElement('div');
+  wordmark.className = 'wordmark';
+  wordmark.textContent = 'מספרי';
+  wordmark.setAttribute('aria-hidden', 'true');
+  if (window.matchMedia('(min-width: 901px)').matches) {
+    document.body.appendChild(wordmark);
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const y = window.scrollY;
+          const max = document.body.scrollHeight - window.innerHeight;
+          const p = Math.min(1, y / Math.max(1, max));
+          const scale = 0.94 + p * 0.1;
+          wordmark.style.transform = `scale(${scale})`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

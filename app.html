@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>מספרי · ספר הבקשות</title>
+  <meta name="description" content="כלי קוד פתוח לתיעוד פניות ספאם ושליחת בקשות מחיקה חוקיות לפי חוק הגנת הפרטיות ו-GDPR." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0a'/%3E%3Crect x='6' y='12' width='20' height='8' rx='1.5' stroke='%23f8f8f8' stroke-width='1.4' fill='none'/%3E%3Cline x1='4' y1='22' x2='28' y2='10' stroke='%23f8f8f8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="shell">
+    <main class="main" id="main"></main>
+    <nav class="rail" aria-label="ניווט ראשי">
+      <div class="rail-mark" onclick="go('home')" title="מספרי" aria-label="מספרי">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="6" y="12" width="20" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="4" y1="22" x2="28" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="rail-group">
+        <button class="rail-btn" data-nav="home" onclick="go('home')" aria-label="בית" title="בית">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg>
+        </button>
+        <button class="rail-btn" data-nav="new-call" onclick="go('new-call')" aria-label="פנייה חדשה" title="פנייה חדשה">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14m-7-7h14"/></svg>
+        </button>
+        <button class="rail-btn" data-nav="bulk" onclick="go('bulk')" aria-label="שליחה המונית" title="שליחה המונית">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
+        </button>
+        <button class="rail-btn" data-nav="scan" onclick="go('scan')" aria-label="סריקת מספרים" title="סריקת מספרים">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
+      </div>
+      <div class="rail-spacer"></div>
+      <div class="rail-group">
+        <button class="rail-btn" data-nav="profile" onclick="go('profile')" aria-label="הגדרות" title="הגדרות">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h.09a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.09a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+  <script src="data/entities.js"></script>
+  <script src="data/templates.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
