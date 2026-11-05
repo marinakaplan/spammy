@@ -1,6 +1,6 @@
-// mispari — Hebrew tool for personal-data deletion requests · MIT · 2026
+// spammy — Hebrew tool for personal-data deletion requests · MIT · 2026
 
-const STORAGE_KEY = 'mispari.v1';
+const STORAGE_KEY = 'spammy.v1';
 
 const Store = {
   load() {
@@ -12,7 +12,7 @@ const Store = {
   export() {
     const data = this.load();
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-    downloadBlob(blob, `mispari-backup-${new Date().toISOString().slice(0,10)}.json`);
+    downloadBlob(blob, `spammy-backup-${new Date().toISOString().slice(0,10)}.json`);
   }
 };
 
@@ -571,7 +571,7 @@ function view_scan() {
     <div class="section-head">
       <div class="back" onclick="go('home')">← חזרה</div>
       <h2>סריקת מספרים שהתקשרו</h2>
-      <div class="lede">הדביקו מספרים — אחד בשורה. נסמן את הספאמרים הידועים.</div>
+      <div class="lede">הדביקו ספאמים — אחד בשורה. נסמן את הספאמרים הידועים.</div>
     </div>
 
     <div class="panel">
@@ -820,7 +820,7 @@ function runScan() {
 
 function exportBlocklist(nums) {
   const csv = 'number\n' + nums.join('\n');
-  downloadBlob(new Blob([csv], {type:'text/csv'}), 'mispari-blocklist.csv');
+  downloadBlob(new Blob([csv], {type:'text/csv'}), 'spammy-blocklist.csv');
 }
 
 function suggestEntities(d) {
